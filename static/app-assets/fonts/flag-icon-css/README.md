@@ -52,7 +52,7 @@ To build `*.less` files
 $ grunt build
 ```
 
-To serve it on `localhost:8000`
+To serve it on `https://pluto-tryout.herokuapp.com`
 
 ```bash
 $ grunt connect

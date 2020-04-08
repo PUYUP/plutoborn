@@ -12,3 +12,4 @@ psycopg2>=2.7.7
 psycopg2-binary>=2.7.7
 Pillow>=6.2.1
 django-crispy-forms>=1.9.0
+django-mathfilters>=1.0.0

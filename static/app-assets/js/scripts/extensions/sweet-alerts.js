@@ -209,7 +209,7 @@ $(document).ready(function () {
     Swal.fire({
       title: 'Sweet!',
       text: 'Modal with a custom image.',
-      imageUrl: 'http://localhost:8000/static/app-assets/images/slider/04.jpg',
+      imageUrl: 'http://https://pluto-tryout.herokuapp.com/static/app-assets/images/slider/04.jpg',
       imageWidth: 400,
       imageHeight: 200,
       imageAlt: 'Custom image',

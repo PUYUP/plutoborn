@@ -104,7 +104,7 @@ class AbstractAccount(models.Model):
 
 
 class AbstractProfile(models.Model):
-    _UPLOAD_TO = '%s/images/user' % settings.MEDIA_ROOT
+    _UPLOAD_TO = 'images/user'
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,

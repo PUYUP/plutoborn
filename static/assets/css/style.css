@@ -1,0 +1,91 @@
+.invalid-feedback {
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.alert > ul {
+    padding-left: 0;
+    list-style: none;
+}
+
+.password-confirm ul {
+    padding-left: 0;
+    list-style: none;
+}
+
+.table td {
+    vertical-align: top;
+}
+
+
+/***
+ * SIMULATION
+ */
+.simulation .numbering .btn {
+    width: 40px;
+}
+
+.simulation #countdown {
+    margin-top: 10px;
+}
+
+.simulation #countdown > div {
+    text-align: center;
+    width: 80px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: #fff;
+}
+
+.simulation #countdown > div + div {
+    margin-left: 10px;
+}
+
+.simulation #countdown .digit {
+    font-size: 20px;
+}
+
+.simulation .choices ul > li {
+    cursor: pointer;
+}
+
+.simulation .choices ul > li:hover {
+    background-color: #ffa;
+}
+
+.simulation .choices ul > li + li {
+    margin-top: 15px;
+}
+
+.simulation .choices ul > li label {
+    text-transform: none;
+    font-weight: normal;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.simulation .choices ul > li label.bg-info,
+.answer-result .bg-info {
+    border-color: #03a6b1 !important;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.simulation .choices ul > li label.bg-success,
+.answer-result .bg-success {
+    border-color: #25af6a !important;
+    border-width: 1px;
+    border-style: solid;
+}
+
+/***
+ * Bundle
+ */
+.bundle .meta > p {
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.bundle .meta > p + p {
+    margin-top: 5px;
+}

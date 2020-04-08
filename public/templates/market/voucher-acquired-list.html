@@ -1,0 +1,161 @@
+{% extends 'templates/base.html '%}
+{% load humanize %}
+{% block head_title %}Voucher Saya{% endblock %}
+{% block content_title %}Voucher Saya{% endblock %}
+
+{% block content %}
+    <div class="myvouchers">
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center pb-50">
+                        <h4 class="card-title">Riwayat Redeem Voucher</h4>
+                        <div class="dropdown">
+                            <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#redeemVoucher" data-backdrop="static">
+                                <i class="bx bx-dollar-circle"></i>
+                                Redeem Voucher
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-body p-0 pb-1">
+                            {% if not vouchers.exists %}
+                                <p class="text-muted mb-0 text-center">Belum pernah Redeem.</p>
+                            {% endif %}
+                            
+                            <ul class="list-group list-group-flush">
+                                {% for item in vouchers %}
+                                    <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
+                                        <div class="list-left d-flex">
+                                            <div class="list-icon mr-1">
+                                                <div class="avatar bg-rgba-success m-0">
+                                                    <div class="avatar-content">
+                                                        <i class="bx bx-chevrons-down text-success font-size-base"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="list-content">
+                                                <span class="list-title">
+                                                    {{ item.voucher.label|safe }}
+                                                    dengan Kode {{ item.voucher.code }}
+                                                </span>
+
+                                                <small class="text-muted d-block">{{ item.date_created|date:'d-m-Y H:i'|safe }}</small>
+                                            </div>
+                                        </div>
+                                        <span>{{ item.voucher.coin_amount|intcomma|safe }} koin</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div> <!-- KOIN -->
+            </div> <!-- /.col -->
+        </div> <!-- /.row -->
+    </div>
+
+    <!-- BEGIN: Exchange Points -->
+    <div class="modal fade" id="redeemVoucher" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Redeem Voucher dengan Coin</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="input-group mb-1">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">Kode Voucher</div>
+                            </div>
+
+                            <input type="text" id="voucher-code" name="voucher-code" class="form-control form-control-lg">
+                        </div>
+
+                        <div class="help-text text-muted">
+                            Tukarkan Voucher untuk mendapatkan tambahan Coin.
+                        </div>
+                    </div>
+
+                    <button type="button" id="redeem-confirm" class="btn btn-block btn-lg btn-info text-uppercase">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END: Exchange Points -->
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        /***
+         * Cookies
+         */
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        /***
+         * Confirm redeem
+         */
+        $(document).on('click', '#redeem-confirm', function(event) {
+            event.preventDefault();
+
+            var redeemCode = $('input[name="voucher-code"]').val();
+            redeemSubmit(redeemCode);
+        });
+
+        function redeemSubmit(value) {
+            $.ajax({
+                method: 'POST',
+                url: '/api/market/voucher-redeems/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {'voucher_code': value},
+                beforeSend: function(xhr) {
+                    
+                },
+                success: function(response) {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Redeem Berhasil',
+                        text: 'Menyegarkan...',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    });
+        
+                    window.location.reload();
+                },
+                error: function(error) {
+                    var msg = 'Terjadi kesalahan tidak terduga';
+                    
+                    if (error && error.responseJSON) {
+                        msg = error.responseJSON['detail'];
+                    }
+
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Kesalahan',
+                        text: msg,
+                    });
+                },
+            });
+        }
+    </script>
+{% endblock %}

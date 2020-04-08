@@ -1,0 +1,314 @@
+{% extends 'templates/base.html '%}
+{% load humanize %}
+{% load crispy_forms_tags %}
+{% block head_title %}{{ packet.label }}{% endblock %}
+
+{% block content_title %}
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-8">
+            <div class="d-flex w-100 align-items-center">
+                {% if bundle.simulation_type == NATIONAL %}
+                    <span class="text-success text-uppercase font-weight-bolder">
+                        Simulasi {{ bundle.get_simulation_type_display }} &nbsp; &nbsp;
+                    </span>
+                {% endif %}
+
+                {{ packet.label }}
+
+                {% if bundle.password and not bundle_password %}
+                    <span class="ml-auto text-uppercase text-danger font-weight-bolder">Dilindungi Password</span>
+                {% else %}
+                    <button type="button" id="simulate-action" class="btn btn-success btn-sm ml-auto text-uppercase"
+                        data-acquired-id="{{ packet.acquired_id }}">
+                        <i class="bx bx-task"></i>
+                        Kerjakan
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% if user.profile.is_empty%}
+        <div class="alert alert-warning">
+            Tidak diizinkan melihat halaman ini. Silahkan lengkapi profil Anda. <br />
+            <a href="{% url 'profile' %}" class="btn btn-dark mt-1">Lengkapi Profil</a>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-8">
+                {% if bundle.password and not bundle_password %}
+                    <div class="card">
+                        <form action="{% url 'packet_detail' packet.uuid %}" class="card-body" method="post">
+                            <div class="form-group d-flex w-100 mb-0">
+                                <div class="w-100">
+                                    {% csrf_token %}
+                                    {{ form|crispy }}
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-block btn-primary rounded-0">Buka</button>
+                        </form>
+                    </div> <!-- /.password -->
+                {% endif %}
+
+                {% if bundle.simulation_type == NATIONAL %}
+                    <div class="card">
+                        <div class="card-body">
+                            <p>Untuk mengikuti try out ini pilih Jurusan yang diinginkan.</p>
+
+                            <select class="selectpicker form-control" id="program-studies" multiple style="min-height: 200px;">
+                                {% for item in program_studies %}
+                                    <option value="{{ item.id }}">{{ item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="card">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="w-25 pb-0">Nama</td>
+                            <td class="font-weight-bold pb-0">{{ packet.label|safe }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Tanggal dan Jam Mulai</td>
+                            <td class="font-weight-bold pb-0">
+                                {% if packet.classification == SCORE %}
+                                    Kapan saja
+                                {% else %}
+                                    {% if bundle.start_date %}
+                                        {{ bundle.start_date|date:'d-m-Y H:i' }}
+                                    {% elif packet.start_date %}
+                                        {{ packet.start_date|date:'d-m-Y H:i' }}
+                                    {% else %}
+                                        Bebas
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Tanggal dan Jam Selesai</td>
+                            <td class="font-weight-bold pb-0">
+                                {% if packet.classification == SCORE %}
+                                    Kapan saja
+                                {% else %}
+                                    {% if bundle.end_date %}
+                                        {{ bundle.end_date|date:'d-m-Y H:i' }}
+                                    {% elif packet.end_date %}
+                                        {{ packet.end_date|date:'d-m-Y H:i' }}
+                                    {% else %}
+                                        Bebas
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Durasi</td>
+                            <td class="font-weight-bold pb-0">{{ packet.duration }} menit</td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Kesempatan Tersedia</td>
+                            <td class="font-weight-bold pb-0">
+                                {% if packet.chance == 0 %}
+                                    Tidak ada batasan
+                                {% else %}
+                                    {{ packet.chance }} kali
+                                    <span class="font-weight-normal text-muted">(Anda sudah melakukan {{ packet.chance_total }} kali percobaan)</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Minimal Skor Untuk Lolos</td>
+                            <td class="font-weight-bold pb-0">{{ packet.passed_score }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Jenis</td>
+                            <td class="font-weight-bold pb-0">{{ packet.get_classification_display }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Jumlah Soal</td>
+                            <td class="font-weight-bold pb-0">{{ packet.question_total }} soal</td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Jumlah Materi</td>
+                            <td class="font-weight-bold pb-0">{{ packet.theory_total }} materi</td>
+                        </tr>
+
+                        <tr>
+                            <td class="pb-0">Jejang</td>
+                            <td class="font-weight-bold pb-0">{{ packet.get_education_level_display }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="align-item-top">Keterangan / Aturan</td>
+                            <td class="align-item-top">
+                                {% if packet.description %}
+                                    {{ packet.description|safe }}
+                                {% else %}
+                                    &mdash;
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div> <!-- /.detail -->
+
+                {% if simulations.exists %}
+                    <h6>Riwayat Percobaan</h6>
+
+                    <ul class="list-unstyled w-100">
+                        {% for item in simulations %}
+                            <li class="media w-100">
+                                <div class="card w-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Simulasi ke #{{ item.chance }}: {{ item.start_date|date:'d-m-Y H:i' }}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">
+                                            Status:
+                                            {% if item.is_done %}
+                                                <span class="text-success text-uppercase">Selesai</span>
+                                            {% else %}
+                                                <span class="text-muted text-uppercase">Sedang di Kerjakan</span>
+                                            {% endif %}
+                                        </h6>
+
+                                        {% if item.is_done %}
+                                            <a href="{% url 'simulation_detail' item.uuid %}" class="card-link">
+                                                Selengkapnya
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'packet_simulation' item.packet.uuid %}" class="card-link">
+                                                Lanjutkan
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div> <!-- /.col-lg-8 -->
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="buyBundle" tabindex="-1" role="dialog" aria-labelledby="buyBundleTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="buyBundleTitle">Beli Paket</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-borderless"> 
+                            <tr>
+                                <td class="pl-0">Harga</td>
+                                <td class="pr-0 font-weight-bold text-right"><span id="coin-amount"></span> koin</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pl-0">Koin Saya</td>
+                                <td class="pr-0 font-weight-bold text-right">{{ coin_amounts.total_active|intcomma|safe }} koin</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pl-0">Informasi</td>
+                                <td class="pr-0 font-weight-bold text-right"><span id="allow-buy"></span></td>
+                            </tr>
+                        </table>
+
+                        <div class="text-right">
+                            <button type="button" id="buy-action" class="btn btn-info">OK. Beli Paket Ini</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        /***
+         * Cookies
+         */
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+
+        /***
+         * Start simulation!
+         */
+        $(document).on('click', '#simulate-action', function(event) {
+            event.preventDefault();
+
+            var $this = $(this),
+                acquired_id = $this.data('acquired-id'),
+                program_studies = $('#program-studies').val();
+
+            $.ajax({
+                method: 'POST',
+                url: '/api/tryout/simulations/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {
+                    acquired: acquired_id,
+                    program_studies: program_studies,
+                },
+                beforeSend: function(xhr) {
+                    $this.attr('disabled', true);
+                },
+                success: function(response) {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Tindakan Berhasil',
+                        text: 'Menyiapkan...',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    });
+
+                    window.location.href = response.url_simulation;
+                },
+                error: function(error) {
+                    $this.removeAttr('disabled');
+
+                    var msg = 'Terjadi kesalahan tidak terduga';
+                    
+                    if (error && error.responseJSON) {
+                        msg = error.responseJSON['detail'];
+                    }
+
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Kesalahan',
+                        text: msg,
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

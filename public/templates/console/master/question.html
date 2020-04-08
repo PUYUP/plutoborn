@@ -1,0 +1,54 @@
+{% extends 'templates/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}Pertanyaan{% endblock %}
+{% block content_title %}Pertanyaan untuk <u>{{ packet.label }}</u>{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+            <a href="{% url 'dashboard_question_editor' packet.id %}" class="btn btn-success">Tambah</a>
+
+            {% if messages %}
+                <ul class="messages list-unstyled mt-2 mb-2">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }} mb-0"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="card mt-1">
+                <div class="card-content">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nomor</th>
+                                <th>Judul</th>
+                                <th>Materi</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+
+                        {% for item in questions %}
+                            <tr>
+                                <td>{{ item.numbering }}</td>
+                                <td>{{ item.label }}</td>
+                                <td>{{ item.theory.label }}</td>
+                                <td>
+                                    <a href="{% url 'dashboard_question_editor' item.packet.id item.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

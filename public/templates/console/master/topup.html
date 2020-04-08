@@ -1,0 +1,55 @@
+{% extends 'templates/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}Topup{% endblock %}
+{% block content_title %}Topup{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-8 col-12">
+            {% if messages %}
+                <ul class="messages list-unstyled mt-2 mb-2">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }} mb-0"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="card mt-1">
+                <div class="card-content">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Order ID</th>
+                                <th>Amount</th>
+                                <th>Tanggal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        {% for item in topups %}
+                            <tr>
+                                <td class="text-capitalize font-weight-bolder">
+                                    <a href="{% url 'dashboard_topup_detail' item.id %}">{{ item.user.username }}</a>
+                                </td>
+                                <td>{% if item.payment_order_id %}{{ item.payment_order_id }}{% else %}&mdash;{% endif %}</td>
+                                <td>Rp {{ item.payment_amount|intcomma }}</td>
+                                <td>{{ item.date_created|date:'d-m-Y H:i' }}</td>
+                                <td>{{ item.get_payment_status_display }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

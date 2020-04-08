@@ -1,0 +1,116 @@
+{% extends 'templates/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}Topup{% endblock %}
+{% block content_title %}Topup #{{ topup.payment_order_id }}{% endblock %}
+
+{% block content %}
+    <!-- app invoice View Page -->
+    <section class="invoice-view-wrapper">
+        <div class="row">
+            <!-- invoice view page -->
+            <div class="col-xl-9 col-sm-12 col-md-12 col-lg-8 col-12">
+                {% if topup.payment_status != SETTLEMENT and topup.payment_status != CAPTURE and topup.payment_status != EXPIRED %}
+                    <div class="alert alert-warning">Jika Anda sudah membayar refresh laman ini.</div>
+                {% endif %}
+
+                {% if topup.payment_status == EXPIRED %}
+                    <div class="alert alert-danger">Tenggat waktu pembayaran terlewati. Transaksi dibatalkan.</div>
+                {% endif %}
+
+                <div class="card invoice-print-area">
+                    <div class="card-content">
+                        <div class="card-body">
+                            <!-- logo and title -->
+                            <div class="row">
+                                <div class="col-6">
+                                    <h4 class="text-primary">Invoice</h4>
+                                    <span>Topup Koin</span>
+                                </div>
+
+                                {% if topup.payment_status != EXPIRED %}
+                                    <div class="col-6 d-flex justify-content-end align-items-center">
+                                        <div class="d-block">
+                                            {% if topup.payment_status != SETTLEMENT and topup.payment_status != CAPTURE %}
+                                                <span class="text-danger font-weight-bold d-block" style="margin-bottom: 5px">{{ topup.payment_message|safe }}</span>
+                                                
+                                                {% if topup.payment_guide %}
+                                                    <a href="{{ topup.payment_guide|safe }}" target="_blank" class="btn btn-info btn-sm">Lihat Cara Bayar</a>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="text-success font-weight-bold d-block">LUNAS</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <hr>
+                            <!-- invoice address and contact -->
+                            <div class="invoice-info">
+                                <div class="mt-1">
+                                    <h6 class="invoice-to">Bill To</h6>
+                                    <div class="mb-1">
+                                        <span>{{ user.username|safe }}</span>
+                                    </div>
+                                    <div class="mb-1">
+                                        <span>{{ user.account.email|safe }}</span>
+                                    </div>
+                                    <div class="mb-1">
+                                        <span>
+                                            {% if user.account.telephone %}
+                                                {{ user.account.telephone|safe }}
+                                            {% else %}
+                                                &mdash;
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                        
+                            <!-- product details table-->
+                            <div class="invoice-product-details table-responsive mx-md-25">
+                                <table class="table table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="pl-0">Order ID</td>
+                                            <td class="pl-0 font-weight-bold">{{ topup.payment_order_id|safe }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pl-0">Status</td>
+                                            <td class="pl-0 font-weight-bold">{{ topup.get_payment_status_display|safe }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pl-0">Total Harus Dibayar</td>
+                                            <td class="pl-0 font-weight-bold">Rp {{ topup.payment_amount|intcomma|safe }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pl-0">Penambahan Koin</td>
+                                            <td class="pl-0 font-weight-bold">{{ coin|intcomma }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pl-0">Dibuat Pada</td>
+                                            <td class="pl-0 font-weight-bold">{{ topup.payment_created_date|date:'d/m/Y H:i' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pl-0">Batas Pembayaran</td>
+                                            <td class="pl-0 font-weight-bold">{{ topup.payment_expired_date|date:'d/m/Y H:i' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

@@ -1,0 +1,446 @@
+{% extends 'templates/base.html '%}
+{% load static humanize %}
+{% load mathfilters %}
+{% block head_title %}{{ packet.label|safe }}{% endblock %}
+{% block content_title %}<span class="text-dark text-uppercase font-weight-bolder">Hasil Simulasi ke #{{ simulation.chance }}</span>: {{ packet.label|safe }}{% endblock %}
+
+{% block content %}
+    <section class="simulation">
+        <div class="row">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-8 order-2 order-sm-2 order-md-2 order-lg-1 order-xl-1">
+                <div class="question">
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="question-wrap">
+                                <div id="question-item-{{ question.id }}">
+                                    <h4 class="d-flex w-100 align-items-start">
+                                        <button type="button" class="btn btn-outline-primary bg-white rounded-0">
+                                            {{ question.numbering|safe }}
+                                        </button>
+
+                                        <span class="pl-2">{{ question.label|safe }}</span>
+                                    </h4>
+
+                                    {% if question.description %}
+                                        <div class="mt-1">{{ question.description|safe }}</div>
+                                    {% endif %}
+
+                                    <div class="mt-1 choices" data-answer-id="{{ question.answer_id }}">
+                                        <ul class="list-unstyled mb-0">
+                                            {% for item in choices %}
+                                                <li>
+                                                    <label class="d-flex w-100 align-items-center border p-1 text-transform-normal 
+                                                        {% if item.right_choice %}
+                                                            bg-success
+                                                        {% else %}
+                                                            {% if item.answer_id %}bg-info{% endif %}
+                                                        {% endif %}">
+                                                        <span class="font-weight-bolder">{{ item.identifier|safe }}</span>
+                                                        <span class="pl-2">{{ item.label|safe }}</span>
+                                                    </label>
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div> <!-- /.choices -->
+
+                                    <div class="answer-result d-flex w-100 mt-1 mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <button type="button" class="btn btn-sm bg-success text-dark rounded-0 font-weight-bolder">
+                                                {{ choice.identifier }}
+                                            </button>
+                                            
+                                            <span class="pl-1 small">Jawaban Benar</span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center pl-2">
+                                            <button type="button" class="btn btn-sm {% if question.choice_identifier %}bg-info{% else %}bg-light{% endif %} text-dark rounded-0 font-weight-bolder">
+                                                {% if question.choice_identifier %}
+                                                    {{ question.choice_identifier }}
+                                                {% else %}
+                                                    Kosong
+                                                {% endif %}
+                                            </button>
+                                            
+                                            <span class="pl-1 small">Jawaban Anda</span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center ml-auto">
+                                            <small>Skor Anda</small>
+                                            {% if question.choice_identifier %}
+                                                {% if choice.identifier == question.choice_identifier %}
+                                                    <span class="badge badge-success ml-1">+{{ question.theory.true_score }}</span>
+                                                {% else %}
+                                                    <span class="badge badge-danger ml-1">-{{ question.theory.false_score }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge badge-dark ml-1">{{ question.theory.none_score }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div> <!-- /.answer -->
+
+                                    <h6 class="font-weight-bolder">Penjelasan</h6>
+                                    {% if choice.explanation %}
+                                        <div class="d-block">{{ choice.explanation|safe }}</div>
+                                    {% else %}
+                                        &mdash;
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="actions d-flex w-100 justify-content-between mt-1 pt-1">
+                                <button type="button" id="prev-question" class="btn btn-icon btn-outline-primary" data-uuid="{{ prev_question.uuid }}">
+                                    <i class="bx bx-left-arrow-alt"></i>
+                                </button>
+
+                                <button type="button" id="next-question" class="btn btn-icon btn-outline-primary" data-uuid="{{ next_question.uuid }}">
+                                    <i class="bx bx-right-arrow-alt"></i>
+                                </button>
+                            </div> <!-- /.actions -->
+                        </div> <!-- /.card-body -->
+                    </div>
+                </div>
+            </div> <!-- /.col-lg-8 -->
+
+            <div class="col-12 col-sm-12 col-md-12 col-lg-4 order-1 order-sm-1 order-md-1 order-lg-2 order-xl-2">
+                <a href="{% url 'simulation_ranking' simulation.uuid %}" class="btn btn-warning btn-lg rounded-0 btn-block text-uppercase font-weight-bolder mb-2">
+                    Peringkatku
+                </a>
+
+                <div class="numbering">
+                    <span class="d-block font-weight-bold mb-1">Nomor Soal</span>
+                    <ul class="list-unstyled d-flex w-100 flex-wrap">
+                        {% for item in questions %}
+                            <li id="question-numbering-{{ item.id }}" class="pr-1">
+                                <button type="button" id="get-question" class="rounded-0 pl-0 pr-0 btn 
+                                    {% if item.answer_id %}
+                                        {% if item.choice_id %}
+                                            btn-primary
+                                        {% else %}
+                                            btn-warning
+                                        {% endif %}
+                                    {% else %}
+                                        btn-dark
+                                    {% endif %}" data-uuid="{{ item.uuid }}">
+
+                                    {{ item.numbering|safe }}
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div> <!-- /.col-lg-4 -->
+        </div> <!-- /.row -->
+
+        <div class="simulation-stat">
+            <div class="row">
+                {% for item in simulation_stats_preference %}
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                        <div class="card widget-state-multi-radial">
+                            <div class="card-header d-sm-flex justify-content-between">
+                                <h4 class="card-title">{{ item.theory__label }}</h4>
+                            </div>
+
+                            <div class="card-content">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6">
+                                            <div class="text-center">
+                                                <div id="theory-stat-{{ item.theory }}"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6 d-flex flex-column justify-content-around">
+                                            <div class="chart-info d-flex justify-content-between mb-75">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bullet bullet-info mr-50"></i>
+                                                    <span class="text-bold-600 ml-50">Total Skor</span>
+                                                </div>
+                                                <div class="text-muted">
+                                                    <strong>{{ item.total_score }}</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="chart-info d-flex justify-content-between mb-75">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bullet bullet-primary mr-50"></i>
+                                                    <span class="text-bold-600 ml-50">Kosong</span>
+                                                </div>
+                                                <div class="text-muted">
+                                                    <strong>{{ item.total_not_answer }}</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="chart-info d-flex justify-content-between mb-75">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bullet bullet-dark mr-50"></i>
+                                                    <span class="text-bold-600 ml-50">Total Soal</span>
+                                                </div>
+                                                <div class="text-muted">{{ item.total_question }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- /.card -->
+                    </div> <!-- /.col -->
+                {% endfor %}
+    
+                {% for item in simulation_stats %}
+                    <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 pr-0">
+                        <div class="card widget-state-multi-radial">
+                            <div class="card-header d-sm-flex justify-content-between">
+                                <h4 class="card-title">{{ item.theory__label }}</h4>
+                            </div>
+
+                            <div class="card-content">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6">
+                                            <div class="text-center">
+                                                <div id="theory-stat-{{ item.theory }}"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-6 d-flex flex-column justify-content-around">
+                                            <div class="chart-info d-flex justify-content-between mb-75">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bullet bullet-success mr-50"></i>
+                                                    <span class="text-bold-600 ml-50">Benar</span>
+                                                </div>
+                                                <div class="text-muted">
+                                                    <strong>{{ item.total_true_answer }}</strong>
+                                                    /<span class="text-muted">skor {{ item.score_true_answer }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="chart-info d-flex justify-content-between mb-75">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bullet bullet-danger mr-50"></i>
+                                                    <span class="text-bold-600 ml-50">Salah</span>
+                                                </div>
+                                                <div class="text-muted">
+                                                    <strong>{{ item.total_false_answer }}</strong>
+                                                    /<span class="text-muted">skor {{ item.score_false_answer }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="chart-info d-flex justify-content-between mb-75">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bullet bullet-primary mr-50"></i>
+                                                    <span class="text-bold-600 ml-50">Kosong</span>
+                                                </div>
+                                                <div class="text-muted">
+                                                    <strong>{{ item.total_none_answer }}</strong>
+                                                    /<span class="text-muted">skor {{ item.score_none_answer }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="chart-info d-flex justify-content-between mb-75">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="bullet bullet-dark mr-50"></i>
+                                                    <span class="text-bold-600 ml-50">Total Soal</span>
+                                                </div>
+                                                <div class="text-muted">{{ item.total_question }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> <!-- /.card -->
+                    </div> <!-- /.col -->
+                {% endfor %}
+            </div> <!-- /.row -->
+        </div> <!-- /.stat -->
+    </section>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'app-assets/vendors/js/charts/apexcharts.min.js' %}"></script>
+
+    <script type="text/javascript">
+        /***
+         * Cookies
+         */
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        /***
+         * Load question
+         */
+        $(document).on('click', '#get-question, #prev-question, #next-question', function(event) {
+            event.preventDefault();
+
+            var $this = $(this),
+                uuid = $this.data('uuid');
+
+            if (uuid) {
+                $.ajax({
+                    method: 'GET',
+                    url: '/api/tryout/simulations/{{ simulation.uuid }}/question/',
+                    headers: {'X-CSRFToken': getCookie('csrftoken')},
+                    data: {
+                        'question_uuid': uuid,
+                    },
+                    beforeSend: function(xhr) {
+
+                    },
+                    success: function(response) {
+                        var question = response.question;
+                        var choice = response.choice;
+                        var question_score = response.question_score;
+
+                        $('#prev-question').data('uuid', question.prev_uuid);
+                        $('#next-question').data('uuid', question.next_uuid);
+
+                        var questionItems = '';
+                        $.each(question.choices, function(index, value) {
+                            questionItems += `<li>
+                                <label class="d-flex w-100 align-items-center border p-1 text-transform-normal 
+                                    ${value.right_choice ? 'bg-success' : (value.answer_id ? 'bg-info' : '')}">
+                                    <span class="font-weight-bold">${value.identifier}</span>
+                                    <span class="pl-2">${value.label}</span>
+                                </label>
+                            </li>`;
+                        });
+
+                        var right_choice = `<div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm bg-success text-dark rounded-0 font-weight-bolder">
+                                ${choice ? choice.identifier : ''}
+                            </button>
+                            
+                            <span class="pl-1 small">Jawaban Benar</span>
+                        </div>`;
+
+                        var questionBlock = `<div id="question-item-${question.id}">
+                            <h4 class="d-flex w-100 align-items-start">
+                                <button type="button" class="btn btn-outline-primary bg-white rounded-0">${question.numbering}</button>
+                                <span class="pl-2">${question.label}</span>
+                            </h4>
+
+                            ${question.description ? '<div class="mt-1">' + question.description + '</div>' : ''}
+
+                            <div class="mt-1 choices" data-answer-id="${question.answer_id}">
+                                <ul class="list-unstyled mb-0">
+                                    ${questionItems}
+                                </ul>
+                            </div> <!-- /.choices -->
+
+                            <div class="answer-result d-flex w-100 mt-1 mb-2">
+                                ${choice ? right_choice : ''}
+
+                                <div class="d-flex align-items-center pl-2">
+                                    <button type="button" class="btn btn-sm
+                                        ${question.choice_identifier ? 'bg-info' : 'bg-light'} text-dark rounded-0 font-weight-bolder">
+                                        ${question.choice_identifier ? question.choice_identifier : 'Kosong'}
+                                    </button>
+                                    
+                                    <span class="pl-1 small">Jawaban Anda</span>
+                                </div>
+
+                                <div class="d-flex align-items-center ml-auto">
+                                    Skor Anda
+                                    ${
+                                        question.scoring_type === 'preference' ?
+                                        '<span class="badge badge-success ml-1">+' + choice.score + '</span>' :
+                                        (question.choice_identifier ?
+                                        (choice.identifier == question.choice_identifier ? 
+                                        '<span class="badge badge-success ml-1">+' + question_score.true_score + '</span>' :
+                                        '<span class="badge badge-danger ml-1">-' + question_score.false_score + '</span>') :
+                                        '<span class="badge badge-dark ml-1">' + question_score.none_score + '</span>')
+                                    }
+                                </div>
+                            </div> <!-- /.answer -->
+
+                            <h6 class="font-weight-bolder">Penjelasan</h6>
+                            ${choice.explanation ? '<div class="d-block">' + choice.explanation + '</div>' : ' &mdash;'}
+                        </div>`;
+
+                        $('#question-wrap').html(questionBlock);
+                    }
+                });
+            }
+        });
+
+
+        // Statistics Multi Radial
+        // -----------------------
+        var $primary = '#5A8DEE';
+        var $success = '#39DA8A';
+        var $danger = '#FF5B5C';
+        var $warning = '#FDAC41';
+        var $info = '#00CFDD';
+        var $label_color = '#304156';
+        var $danger_light = '#FFDEDE';
+        var $gray_light = '#828D99';
+        var $bg_light = "#f2f4f4";
+
+        {% for item in simulation_stats %}
+            var total_question = '{{ item.total_question }}';
+            var total_true_answer = '{{ item.total_true_answer }}';
+            var total_false_answer = '{{ item.total_false_answer }}';
+            var total_none_answer = '{{ item.total_none_answer }}';
+
+            var true_stat = Math.round(total_true_answer / total_question * 100);
+            var false_stat = Math.round(total_false_answer / total_question * 100);
+            var none_stat = Math.round(total_none_answer / total_question * 100);
+            var total_stat = true_stat + false_stat + none_stat;
+    
+            var statisticsRadialChartOptions = {
+                chart: {
+                    height: 270,
+                    type: 'donut',
+                },
+                colors: [$success, $danger, $primary],
+                series: [true_stat, false_stat, none_stat],
+                labels: ['Benar', 'Salah', 'Kosong'],
+                legend: false,
+                stroke: {
+                    lineCap: "round",
+                }
+            }
+
+            var statisticsRadialChart = new ApexCharts(
+                document.querySelector("#theory-stat-{{ item.theory }}"),
+                statisticsRadialChartOptions
+            );
+            statisticsRadialChart.render();
+        {% endfor %}
+
+        {% for item in simulation_stats_preference %}
+            var value = '{{ item.total_score|div:item.total_choice|mul:100|stringformat:".0f" }}';
+            var statisticsRadialChartOptions = {
+                chart: {
+                    height: 230,
+                    type: 'radialBar',
+                },
+                colors: [$info],
+                series: [value],
+                labels: ['Skor'],
+                legend: false,
+                stroke: {
+                    lineCap: "round",
+                }
+            }
+
+            var statisticsRadialChart = new ApexCharts(
+                document.querySelector("#theory-stat-{{ item.theory }}"),
+                statisticsRadialChartOptions
+            );
+            statisticsRadialChart.render();
+        {% endfor %}
+    </script>
+{% endblock %}

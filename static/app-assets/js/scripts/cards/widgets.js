@@ -214,7 +214,7 @@ $(document).ready(function () {
         hollow: {
           margin: -5,
           size: '85%',
-          image: 'http://https://pluto-tryout.herokuapp.com/static/app-assets/images/cards/face-regular-24.png',
+          image: 'https://pluto-tryout.herokuapp.com/static/app-assets/images/cards/face-regular-24.png',
           imageWidth: 32,
           imageHeight: 32,
           imageClipped: false,

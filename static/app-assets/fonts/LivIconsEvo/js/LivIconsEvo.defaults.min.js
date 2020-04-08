@@ -17,7 +17,7 @@ function LivIconsEvoDefaults() {
 
 	var defaultOptions = {
 
-		pathToFolder: 'http://https://pluto-tryout.herokuapp.com/static/app-assets/fonts/LivIconsEvo/svg/', //the path from root of your site to folder with icons. Also may be as URL, like 'http://yoursite.com/path/to/LivIconsEvo/svg/'
+		pathToFolder: 'https://pluto-tryout.herokuapp.com/static/app-assets/fonts/LivIconsEvo/svg/', //the path from root of your site to folder with icons. Also may be as URL, like 'http://yoursite.com/path/to/LivIconsEvo/svg/'
 		name: 'bell.svg', //the default icon name
 
 		//visualization options

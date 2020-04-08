@@ -23,15 +23,15 @@ $(document).ready(function () {
           comment: 1,
           attachment: 3,
           users: [
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-11.jpg",
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-12.jpg"
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-11.jpg",
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-12.jpg"
           ]
         },
         {
           id: "12",
           title: "Type Something",
           border: "info",
-          image: "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/banner/banner-21.jpg",
+          image: "https://pluto-tryout.herokuapp.com/static/app-assets/images/banner/banner-21.jpg",
           dueDate: "Feb 10"
         },
         {
@@ -42,8 +42,8 @@ $(document).ready(function () {
           comment: 23,
           attachment: 4,
           users: [
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-1.jpg",
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-18.jpg"
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-1.jpg",
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-18.jpg"
           ]
         },
         {
@@ -53,8 +53,8 @@ $(document).ready(function () {
           comment: 56,
           attachment: 2,
           users: [
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-26.jpg",
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-16.jpg"
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-26.jpg",
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-16.jpg"
           ]
         },
         {
@@ -79,8 +79,8 @@ $(document).ready(function () {
           dueDate: "Jan 1",
           comment: 8,
           users: [
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-24.jpg",
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-14.jpg"
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-24.jpg",
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-14.jpg"
           ]
         },
         {
@@ -110,9 +110,9 @@ $(document).ready(function () {
           dueDate: "Mar 1",
           comment: 10,
           users: [
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-20.jpg",
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-22.jpg",
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-13.jpg"
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-20.jpg",
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-22.jpg",
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-13.jpg"
           ]
         },
         {
@@ -130,8 +130,8 @@ $(document).ready(function () {
           border: "primary",
           dueDate: "Mar 9",
           users: [
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-1.jpg",
-            "http://https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-2.jpg"
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-1.jpg",
+            "https://pluto-tryout.herokuapp.com/static/app-assets/images/portrait/small/avatar-s-2.jpg"
           ]
         }
       ]

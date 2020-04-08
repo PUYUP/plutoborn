@@ -8,14 +8,14 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'pluto-tryout.herokuapp.com'
 # Django Sessions
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/2.2/ref/settings/
-SESSION_COOKIE_SECURE = True
-SESSION_COOKIE_SAMESITE = None
-SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SECURE = True
+# SESSION_COOKIE_SAMESITE = None
+# SESSION_COOKIE_HTTPONLY = True
 
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_SSL_REDIRECT = True
-X_FRAME_OPTIONS = 'DENY'
+# SECURE_CONTENT_TYPE_NOSNIFF = True
+# SECURE_BROWSER_XSS_FILTER = True
+# SECURE_SSL_REDIRECT = True
+# X_FRAME_OPTIONS = 'DENY'
 
 
 # Django csrf

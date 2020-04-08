@@ -1,0 +1,89 @@
+{% extends 'base.html '%}
+{% load static humanize %}
+{% load mathfilters %}
+{% block head_title %}Peringkat{% endblock %}
+{% block content_title %}<span class="text-dark text-uppercase font-weight-bolder">Rangkuman Peringkat</span>: {{ packet.label|safe }}{% endblock %}
+
+{% block content %}
+    <section class="simulation">
+        <div class="card">
+            <div class="card-body">
+                <form action="{% url 'simulation_ranking' simulation.uuid %}" method="post">
+                    {% csrf_token %}
+
+                    <div class="row mb-2">
+                        <div class="col-2 col-sm-2 col-md-2">
+                            <div class="form-group">
+                                <label for="chance">Simulai Ke?</label>
+                                <select name="chance" class="form-control w-100 rounded-0">
+                                    {% for i in "x"|rjust:simulation_count %}
+                                        <option value="{{ forloop.counter }}" {% if forloop.counter == ranking_chance %}selected{% endif %}>{{ forloop.counter }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div> <!-- /.col -->
+
+                        <div class="col-8 col-sm-8 col-md-4">
+                            <div class="form-group">
+                                <label for="chance">Materi</label>
+                                <select name="theory" class="form-control w-100 rounded-0">
+                                    <option value="0">Semua Materi</option>
+                                    {% for item in theories %}
+                                        <option value="{{ item.theory }}" {% if ranking_theory == item.theory__pk %}selected{% endif %}>{{ item.theory__label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-2 col-sm-2 col-md-2">
+                            <label for="chance">&nbsp;</label>
+                            <button type="submit" class="btn btn-warning btn-block rounded-0">Saring</button>
+                        </div> <!-- /.col -->
+                    </div>
+                </form>
+
+                <table class="table table-striped text-center">
+                    <thead>
+                        <tr class="bg-light font-weight-bold">
+                            <th>Ranking</th>
+                            <th>Akun</th>
+                            <th>Jawab Benar</th>
+                            <th>Jawab Salah</th>
+                            <th>Jawab Kosong</th>
+                            <th>Skor Benar</th>
+                            <th>Skor Salah</th>
+                            <th>Skor Kosong</td>
+                            <th>Total Skor</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in answer_scores %}
+                            <tr class="{% if item.current_score %}bg-warning{% endif %}">
+                                <td>{{ forloop.counter0 | add:answer_scores.start_index }}</td>
+                                <th>{{ item.user__username }}</th>
+                                <td>{{ item.total_true_answer }}</td>
+                                <td>{{ item.total_false_answer }}</td>
+                                <td>{{ item.total_none_answer }}</td>
+
+                                <td>{{ item.true_answer_score }}</td>
+                                <td>{{ item.false_answer_score }}</td>
+                                <td>{{ item.none_answer_score }}</td>
+
+                                <td>{{ item.total_score }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'app-assets/vendors/js/charts/apexcharts.min.js' %}"></script>
+
+    <script type="text/javascript">
+  
+    </script>
+{% endblock %}

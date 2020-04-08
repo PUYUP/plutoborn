@@ -31,7 +31,7 @@ class EmailValidationOnForgotPassword(PasswordResetForm):
 
 
 class LoginView(View):
-    template_name = 'templates/person/auth/login.html'
+    template_name = 'person/auth/login.html'
     context = dict()
 
     def get(self, request):
@@ -43,7 +43,7 @@ class LoginView(View):
 
 
 class SignUpView(View):
-    template_name = 'templates/person/auth/signup.html'
+    template_name = 'person/auth/signup.html'
     form = SignupForm
     context = dict()
 
@@ -135,7 +135,7 @@ class SignUpView(View):
 
 
 class VerifyView(View):
-    template_name = 'templates/person/auth/verify.html'
+    template_name = 'person/auth/verify.html'
     form = VerifyForm
     context = dict()
 
@@ -179,7 +179,7 @@ class VerifyView(View):
 
 
 class BoardingView(View):
-    template_name = 'templates/person/auth/boarding.html'
+    template_name = 'person/auth/boarding.html'
     form = BoardingForm
     context = dict()
     

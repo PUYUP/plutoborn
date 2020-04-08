@@ -1,0 +1,218 @@
+{% extends 'base.html '%}
+{% load humanize %}
+{% block head_title %}{{ bundle.label }}{% endblock %}
+
+{% block content_title %}
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+            <div class="d-flex w-100 align-items-center">
+                {{ bundle.label }}
+
+                {% if not bundle.is_boughted %}
+                    <button type="button" class="btn btn-sm btn-info ml-auto text-uppercase mt-auto"
+                        data-toggle="modal" data-target="#buyBundle" data-id="{{ bundle.id }}"
+                        data-coin="{{ bundle.coin_amount }}" data-backdrop="static">
+                        <i class="bx bx-cart"></i>
+                        Beli Sekarang
+                    </button>
+                {% else %}
+                    <span class="ml-auto text-success text-uppercase font-weight-bold">Sudah Dibeli</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% if user.profile.is_empty%}
+        <div class="alert alert-warning">
+            Tidak diizinkan melihat halaman ini. Silahkan lengkapi profil Anda. <br />
+            <a href="{% url 'profile' %}" class="btn btn-dark mt-1">Lengkapi Profil</a>
+        </div>
+    {% else %}
+        <div class="row">
+            <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+                <div class="card">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="w-25">Nama</td>
+                            <td class="font-weight-bold">{{ bundle.label|safe }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>Harga</td>
+                            <td class="font-weight-bold">{{ bundle.coin_amount|intcomma|safe }} Koin</td>
+                        </tr>
+
+                        <tr>
+                            <td>Isi Bundel</td>
+                            <td class="font-weight-bold">{{ bundle.total_packet|intcomma|safe }} Paket</td>
+                        </tr>
+
+                        <tr>
+                            <td>Jenis</td>
+                            <td class="font-weight-bold">{{ bundle.get_simulation_type_display }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>Ber-password</td>
+                            <td class="font-weight-bold">{% if bundle.password %}Ya{% endif %}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="align-item-top">Keterangan</td>
+                            <td class="align-item-top">
+                                {% if bundle.description %}
+                                    {{ bundle.description|safe }}
+                                {% else %}
+                                    &mdash;
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Daftar Paket</td>
+                            <td>
+                                <ul class="list-unstyled mb-0">
+                                    {% for item in packets %}
+                                        <li><a href="{% url 'packet_detail' item.uuid %}">{{ item.label }}</a> &mdash; {{ item.question_total }} soal</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="buyBundle" tabindex="-1" role="dialog" aria-labelledby="buyBundleTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="buyBundleTitle">Beli Paket</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-borderless"> 
+                            <tr>
+                                <td class="pl-0">Harga</td>
+                                <td class="pr-0 font-weight-bold text-right"><span id="coin-amount"></span> koin</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pl-0">Koin Saya</td>
+                                <td class="pr-0 font-weight-bold text-right">{{ coin_amounts.total_active|intcomma|safe }} koin</td>
+                            </tr>
+
+                            <tr>
+                                <td class="pl-0">Informasi</td>
+                                <td class="pr-0 font-weight-bold text-right"><span id="allow-buy"></span></td>
+                            </tr>
+                        </table>
+
+                        <div class="text-right">
+                            <button type="button" id="buy-action" class="btn btn-info">OK. Beli Paket Ini</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        var current_coin = +'{{ coin_amounts.total_active }}';
+
+        /***
+         * Cookies
+         */
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        /***
+         * Prepare modal
+         */
+        $('#buyBundle').on('show.bs.modal', function(e) {
+            var id = $(e.relatedTarget).data('id'),
+                coin = +$(e.relatedTarget).data('coin'),
+                coin_left = current_coin - coin,
+                passed = current_coin >= coin ? true : false,
+                message = current_coin >= coin ? 'Anda bisa membeli' : 'Koin tidak cukup';
+            
+            $(e.currentTarget).find('#coin-amount').html(coin);
+            $(e.currentTarget).find('#allow-buy').html(message);
+            $(e.currentTarget).find('#buy-action').attr('data-id', id).attr('data-coin', coin);
+
+            if (!passed) $('#buy-action').attr('disabled', true).hide();
+        });
+
+
+        /***
+         * Buy!
+         */
+        $(document).on('click', '#buy-action', function(event) {
+            event.preventDefault();
+
+            var $this = $(this),
+                bundle_id = +$this.data('id');
+
+            $.ajax({
+                method: 'POST',
+                url: '/api/market/boughts/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {
+                    bundle: bundle_id,
+                },
+                beforeSend: function(xhr) {
+                    $this.attr('disabled', true);
+                },
+                success: function(response) {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Pembelian Berhasil',
+                        text: 'Sedang menyegarkan...',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    });
+
+                    window.location.reload();
+                },
+                error: function(error) {
+                    $this.removeAttr('disabled');
+
+                    var msg = 'Terjadi kesalahan tidak terduga';
+                    
+                    if (error && error.responseJSON) {
+                        msg = error.responseJSON['detail'];
+                    }
+
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Kesalahan',
+                        text: msg,
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

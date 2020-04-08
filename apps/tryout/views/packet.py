@@ -24,7 +24,7 @@ class PacketDetailView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/tryout/packet-detail.html'
+    template_name = 'tryout/packet-detail.html'
     context = dict()
     form = PasswordProtectForm
 

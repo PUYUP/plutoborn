@@ -24,7 +24,7 @@ class SimulationExamView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/tryout/simulation-exam.html'
+    template_name = 'tryout/simulation-exam.html'
     context = dict()
 
     def get(self, request, simulation_uuid=None):
@@ -92,7 +92,7 @@ class SimulationResultView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/tryout/simulation-result.html'
+    template_name = 'tryout/simulation-result.html'
     context = dict()
 
     def get(self, request, simulation_uuid=None):
@@ -240,7 +240,7 @@ class SimulationRankingView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/tryout/simulation-ranking.html'
+    template_name = 'tryout/simulation-ranking.html'
     context = dict()
 
     def get(self, request, simulation_uuid=None):

@@ -15,7 +15,7 @@ class SecureView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/person/secure.html'
+    template_name = 'person/secure.html'
     form = SecureForm
     context = dict()
 

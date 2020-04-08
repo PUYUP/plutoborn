@@ -15,7 +15,7 @@ class VoucherRedeemListView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/market/voucher-acquired-list.html'
+    template_name = 'market/voucher-acquired-list.html'
     context = dict()
 
     def get(self, request):

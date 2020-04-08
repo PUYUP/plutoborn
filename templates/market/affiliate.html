@@ -1,0 +1,141 @@
+{% extends 'base.html '%}
+{% load humanize %}
+
+{% block head_title %}Affiliate{% endblock %}
+{% block content_title %}Affiliate{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center">
+                <div class="card-content">
+                    <div class="card-body py-1">
+                        <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
+                            <i class="bx bx-chevrons-down font-medium-5"></i>
+                        </div>
+                        <div class="text-muted line-ellipsis">Komisi Aktif</div>
+                        <h3 class="mb-0">
+                            Rp {{ commissions_total_active|intcomma|safe }}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center">
+                <div class="card-content">
+                    <div class="card-body py-1">
+                        <div class="badge-circle badge-circle-lg badge-circle-light-danger mx-auto mb-50">
+                            <i class="bx bx-chevrons-up font-medium-5"></i>
+                        </div>
+                        <div class="text-muted line-ellipsis">Komisi Terpakai</div>
+                        <h3 class="mb-0">Rp {{ commissions_out_total|intcomma|safe }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-group mb-0">
+                        <label for="url">Bagikan URL ini</label>
+                        <input type="url" class="form-control rounded-0" readonly="true" value="http://{{ affiliate_url }}">
+                    </div>
+                </div>
+            </div>
+        
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center pb-50">
+                    <h4 class="card-title">Riwayat Pendaftaran Affiliate</h4>
+                </div>
+                <div class="card-content">
+                    <div class="card-body p-0 pb-1">
+                        {% if not acquireds.exists %}
+                            <p class="text-muted mb-0 text-center">Belum ada yang mendaftar.</p>
+                        {% endif %}
+                        
+                        <ul class="list-group list-group-flush">
+                            {% for item in acquireds %}
+                                <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
+                                    <div class="list-left d-flex">
+                                        <div class="list-icon mr-1">
+                                            <div class="avatar bg-rgba-info m-0">
+                                                <div class="avatar-content">
+                                                    <i class="bx bx-user text-info font-size-base"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-content">
+                                            <span class="list-title">
+                                                {{ item.user_acquired.username|safe }}
+                                            </span>
+
+                                            <small class="text-muted d-block">{{ item.date_created|date:'d-m-Y H:i'|safe }}</small>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div> <!-- KOIN -->
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center pb-50">
+                    <h4 class="card-title">Riwayat Komisi</h4>
+                </div>
+                <div class="card-content">
+                    <div class="card-body p-0 pb-1">
+                        {% if not commissions.exists %}
+                            <p class="text-muted mb-0 text-center">Belum ada komisi.</p>
+                        {% endif %}
+                        
+                        <ul class="list-group list-group-flush">
+                            {% for item in commissions %}
+                                <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
+                                    <div class="list-left d-flex">
+                                        <div class="list-icon mr-1">
+                                            {% if item.transaction_type == IN %}
+                                                <div class="avatar bg-rgba-success m-0">
+                                                    <div class="avatar-content">
+                                                        <i class="bx bx-chevrons-down text-success font-size-base"></i>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if item.transaction_type == OUT %}
+                                                <div class="avatar bg-rgba-danger m-0">
+                                                    <div class="avatar-content">
+                                                        <i class="bx bx-chevrons-up text-danger font-size-base"></i>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="list-content">
+                                            <span class="list-title">
+                                                {{ item.creator.username|safe }}
+                                                {% if item.description %} &mdash; {{ item.description|safe }}{% endif %}
+                                            </span>
+
+                                            <small class="text-muted d-block">{{ item.date_created|date:'d-m-Y H:i'|safe }}</small>
+                                        </div>
+                                    </div>
+
+                                    <span>Rp {% if item.transaction_type == OUT %}-{% endif %}{{ item.amount|intcomma|safe }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div> <!-- KOIN -->
+        </div> <!-- /.col -->
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+ 
+    </script>
+{% endblock %}

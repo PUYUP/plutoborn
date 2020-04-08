@@ -23,7 +23,7 @@ class TopUpListView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/payment/topup-list.html'
+    template_name = 'payment/topup-list.html'
     context = dict()
 
     def get(self, request):
@@ -34,7 +34,7 @@ class TopUpDetailView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/payment/topup-detail.html'
+    template_name = 'payment/topup-detail.html'
     context = dict()
 
     def get(self, request, topup_uuid=None):

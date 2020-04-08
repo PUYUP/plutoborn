@@ -16,7 +16,7 @@ class PointsListView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/mypoints/points-list.html'
+    template_name = 'mypoints/points-list.html'
     context = dict()
 
     def get(self, request):

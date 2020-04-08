@@ -15,7 +15,7 @@ class CoinView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/payment/coin.html'
+    template_name = 'payment/coin.html'
     context = dict()
 
     def get(self, request):

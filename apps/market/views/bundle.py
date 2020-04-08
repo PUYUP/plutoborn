@@ -16,7 +16,7 @@ class BundleListView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/market/bundle-list.html'
+    template_name = 'market/bundle-list.html'
     context = dict()
 
     def get(self, request):
@@ -61,7 +61,7 @@ class BundleDetailView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/market/bundle-detail.html'
+    template_name = 'market/bundle-detail.html'
     context = dict()
 
     def get(self, request, bundle_uuid=None):

@@ -1,0 +1,373 @@
+{% extends 'base.html '%}
+{% load humanize %}
+{% block head_title %}Koin Saya{% endblock %}
+{% block content_title %}Koin Saya{% endblock %}
+
+{% block content %}
+    <div class="dashboard-users">
+        <div class="row">
+            <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+                <div class="card text-center">
+                    <div class="card-content">
+                        <div class="card-body py-1">
+                            <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
+                                <i class="bx bx-chevrons-down font-medium-5"></i>
+                            </div>
+                            <div class="text-muted line-ellipsis">Koin Aktif</div>
+                            <h3 class="mb-0">
+                                {{ coins_total_active|intcomma|safe }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+                <div class="card text-center">
+                    <div class="card-content">
+                        <div class="card-body py-1">
+                            <div class="badge-circle badge-circle-lg badge-circle-light-danger mx-auto mb-50">
+                                <i class="bx bx-chevrons-up font-medium-5"></i>
+                            </div>
+                            <div class="text-muted line-ellipsis">Koin Terpakai</div>
+                            <h3 class="mb-0">{{ coins_out_total|intcomma|safe }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center pb-50">
+                        <h4 class="card-title">Riwayat Koin</h4>
+                        <div class="dropdown">
+                            <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#topUpNominal" data-backdrop="static">
+                                <i class="bx bx-dollar-circle"></i>
+                                Top Up
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-body p-0 pb-1">
+                            {% if not coins.exists %}
+                                <p class="text-muted mb-0 text-center">Belum ada koin.</p>
+                            {% endif %}
+                            
+                            <ul class="list-group list-group-flush">
+                                {% for item in coins %}
+                                    <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
+                                        <div class="list-left d-flex">
+                                            <div class="list-icon mr-1">
+                                                {% if item.transaction_type == IN %}
+                                                    <div class="avatar bg-rgba-success m-0">
+                                                        <div class="avatar-content">
+                                                            <i class="bx bx-chevrons-down text-success font-size-base"></i>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if item.transaction_type == OUT %}
+                                                    <div class="avatar bg-rgba-danger m-0">
+                                                        <div class="avatar-content">
+                                                            <i class="bx bx-chevrons-up text-danger font-size-base"></i>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="list-content">
+                                                <span class="list-title">
+                                                    {{ item.get_transaction_type_display|safe }}
+                                                    {% if item.description %} &mdash; {{ item.description|safe }}{% endif %}
+                                                </span>
+
+                                                <small class="text-muted d-block">{{ item.date_created|date:'d-m-Y H:i'|safe }}</small>
+                                            </div>
+                                        </div>
+                                        <span>{% if item.transaction_type == OUT %}-{% endif %}{{ item.amount|intcomma|safe }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div> <!-- KOIN -->
+
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center pb-50">
+                        <h4 class="card-title">Riwayat Topup</h4>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-body p-0 pb-1">
+                            {% if not topups.exists %}
+                                <p class="text-muted mb-0 text-center">Belum melakukan topup.</p>
+                            {% endif %}
+
+                            <ul class="list-group list-group-flush">
+                                {% for item in topups %}
+                                    <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
+                                        <a href="{% url 'topup_detail' item.uuid %}" class="list-left d-flex">
+                                            <div class="list-icon mr-1">
+                                                {% if item.payment_status != SETTLEMENT and item.payment_status != CAPTURE %}
+                                                    <div class="avatar bg-rgba-muted m-0">
+                                                        <div class="avatar-content">
+                                                            <i class="bx bx-check text-muted font-size-base"></i>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if item.payment_status == SETTLEMENT or item.payment_status == CAPTURE %}
+                                                    <div class="avatar bg-rgba-success m-0">
+                                                        <div class="avatar-content">
+                                                            <i class="bx bx-check-double text-success font-size-base"></i>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="list-content">
+                                                <span class="list-title">{{ item.payment_order_id|safe }}</span>
+                                                <span class="d-block text-dark font-weight-bold">Rp {{ item.payment_amount|intcomma|safe }}</span>
+                                                <small class="text-muted d-block">
+                                                    {% if item.payment_status == SETTLEMENT or item.payment_status == CAPTURE %}
+                                                        Sudah Lunas
+                                                    {% else %}
+                                                        Batas pembayaran {{ item.payment_expired_date|date:'d-m-Y H:i'|safe }}
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </a>
+                                        
+                                        {% if item.payment_status == SETTLEMENT or item.payment_status == CAPTURE %}
+                                            <button type="button" class="btn btn-success btn-sm text-uppercase">Lunas</button>
+                                        {% elif item.payment_status == EXPIRED %}
+                                            <button type="button" class="btn btn-danger btn-sm text-uppercase">Batal</button>
+                                        {% else %}
+                                            <a href="{% url 'topup_detail' item.uuid %}" class="btn btn-info btn-sm text-uppercase">Bayar</a>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div> <!-- KOIN -->
+            </div>
+        </div> <!-- /.row -->
+    </div>
+
+    <!-- BEGIN: TopUp Nominal -->
+    <div class="modal fade" id="topUpNominal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalCenterTitle">Masukkan Nominal Topup</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="input-group mb-1">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">Rp</div>
+                            </div>
+
+                            <input type="text" id="topup-nominal" name="topup-nominal"
+                                value="25000" class="form-control form-control-lg">
+                        </div>
+
+                        <div class="help-text text-muted">
+                            Minimal topup Rp 25.0000,- sampai tidak terbatas.
+                            Anda akan mendapatkan <span id="topup-koin" class="font-weight-bolder">25.000</span> Koin.
+                            Harga 1 koin adalah Rp 1,-
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <button type="button" id="topup-confirm" data-type="commission" class="btn btn-block btn-secondary text-uppercase">Gunakan Komisi</button>
+                        </div>
+
+                        <div class="col-6">
+                            <button type="button" id="topup-confirm" data-type="pay" class="btn btn-block btn-info text-uppercase">Bayar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END: TopUp Nominal -->
+{% endblock %}
+
+{% block js %}
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-W08K_oXWFKYZc8QD"></script>
+
+    <script type="text/javascript">
+        /***
+         * Cookies
+         */
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+
+        /***
+         * Magic
+         */
+        $(document).on('keyup change', '#topup-nominal', function(event) {
+            var x = +$(event.target).val(),
+                y = x / 1,
+                z = Math.floor(y);
+
+            $('#topup-koin').html(z);
+        });
+
+
+        /***
+         * Confirm topup
+         */
+        $(document).on('click', '#topup-confirm', function(event) {
+            event.preventDefault();
+
+            var type = $(this).data('type');
+            var topupValue = +$('#topup-nominal').val();
+
+            if (topupValue < 25000) {
+                alert('Minimal topup Rp 25.000,-');
+                return false;
+            } else {
+                if (type === 'pay') topUpPaySubmit(topupValue);
+                if (type === 'commission') topUpCommissionSubmit(topupValue);
+            }
+        });
+
+        function callbackPayment(status=null, nominal, data) {
+            $.ajax({
+                method: 'POST',
+                url: '/api/payment/topups/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {
+                    'payment_order_id': data.order_id,
+                    'payment_status': data.transaction_status,
+                    'payment_status_code': data.status_code,
+                    'payment_message': data.status_message,
+                    'payment_guide': data.pdf_url,
+                    'payment_type': data.payment_type,
+                    'payment_amount': data.gross_amount,
+                    'payment_created_date': data.transaction_time
+                },
+                beforeSend: function(xhr) {
+                    
+                },
+                success: function(response) {
+                    var topupDetailUrl = '/topup/' + response.uuid + '/';
+                    window.location.href = topupDetailUrl;
+                },
+                error: function(error) {
+                    
+                },
+            });
+        }
+
+
+        /***
+         * Topup pay action
+         */
+        function topUpPaySubmit(nominal=25000) {
+            $.ajax({
+                method: 'POST',
+                url: '/api/payment/topups/request/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {'nominal': nominal},
+                beforeSend: function(xhr) {
+                    
+                },
+                success: function(response) {
+                    // SnapToken acquired from previous step
+                    snap.pay(response.token, {
+                        onSuccess: function(result){
+                            callbackPayment(true, nominal, result);
+                        },
+                        onPending: function(result){
+                            callbackPayment(false, nominal, result);
+                        },
+                        onError: function(result){
+                            // Pass
+                        }
+                    });
+
+                    // close nominal modal
+                    $('#topUpNominal').modal('hide');
+                },
+                error: function(error) {
+                    var msg = 'Terjadi kesalahan tidak terduga';
+                    
+                    if (error && error.responseJSON) {
+                        msg = error.responseJSON['detail'];
+                    }
+
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Kesalahan',
+                        text: msg,
+                    });
+                },
+            });
+        }
+
+
+        /***
+         * Topup commision action
+         */
+        function topUpCommissionSubmit(nominal=25000) {
+            $.ajax({
+                method: 'POST',
+                url: '/api/payment/topups/commission/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {'nominal': nominal},
+                beforeSend: function(xhr) {
+                    
+                },
+                success: function(response) {
+                    // close nominal modal
+                    $('#topUpNominal').modal('hide');
+
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Tindakan Berhasil',
+                        text: 'Menyegarkan...',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    });
+
+                    window.location.reload();
+                },
+                error: function(error) {
+                    var msg = 'Terjadi kesalahan tidak terduga';
+                    
+                    if (error && error.responseJSON) {
+                        msg = error.responseJSON['detail'];
+                    }
+
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Kesalahan',
+                        text: msg,
+                    });
+                },
+            });
+        }
+    </script>
+{% endblock %}

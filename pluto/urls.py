@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from api import routers as api_routers
-from public.views import urls as public_urls
+from views import urls as public_urls
 from apps.person.views import urls as person_urls
 from apps.payment.views import urls as payment_urls
 from apps.market.views import urls as market_urls

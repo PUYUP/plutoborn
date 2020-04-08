@@ -15,7 +15,7 @@ class ProfileView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/person/profile.html'
+    template_name = 'person/profile.html'
     form = ProfileForm
     context = dict()
 

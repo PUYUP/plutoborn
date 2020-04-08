@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="{% static 'app-assets/vendors/css/pickers/daterange/daterangepicker.css' %}">
+
+    <style type="text/css">
+        .choice-item {
+            background-color: #e5e5e5;
+        }
+
+        .choice-item + .choice-item {
+            margin-top: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block head_title %}Pertanyaan{% endblock %}
+{% block content_title %}Pertanyaan untuk <u>{{ packet.label }}</u>{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-10 col-xl-8 col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form action="{% if queryset %}{% url 'dashboard_question_editor' packet.id queryset.id %}{% else %}{% url 'dashboard_question_editor' packet.id %}{% endif %}" method="POST">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <hr />
+                        <h4>Pilihan Jawaban</h4>
+
+                        {{ formset.management_form }}
+                        {% for form in formset %}
+                            <div class="choice-item pt-2 pr-2 pl-2">
+                                <div class="row">
+                                    {% for field in form %}
+                                        {% if field.name == 'identifier' %}
+                                            <div class="col-3 col-sm-2 order-1">
+                                                {{ field|as_crispy_field }}
+                                            </div>
+                                        {% elif field.name == 'score' %}
+                                            <div class="col-3 col-sm-2 order-2">
+                                                {{ field|as_crispy_field }}
+                                            </div>
+                                        {% elif field.name == 'label' %}
+                                            <div class="col-6 col-sm-8 order-3">
+                                                {{ field|as_crispy_field}}
+                                            </div>
+                                        {% else %}
+                                            <div class="col-12 order-4">{{ field|as_crispy_field }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-success mt-2">Submit</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if queryset %}
+                <div class="card">
+                    <div class="card-body">
+                        <p>Menghapus Pertanyaan maka semua komponen terkait seperti Jawaban ikut terhapus. Setelah Anda meng-klik tombol Hapus tidak ada peringatan apapun.</p>
+                        <a href="{% url 'dashboard_question_delete' packet.id queryset.id %}" class="btn btn-danger">Hapus</a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'app-assets/vendors/js/pickers/daterange/moment.min.js' %}"></script>
+    <script src="{% static 'app-assets/vendors/js/pickers/daterange/daterangepicker.js' %}"></script>
+
+    <script type="text/javascript">
+        // Date & Time
+        $('input[name="start_date"], input[name="end_date"]').daterangepicker({
+            timePicker: true,
+            singleDatePicker: true,
+            showDropdowns: true,
+            minYear: 2020,
+            maxYear: parseInt(moment().format('YYYY'),10),
+            locale: {
+                format: 'YYYY-MM-DD HH:mm:ss'
+            }
+        });
+    </script>
+{% endblock %}

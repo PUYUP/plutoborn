@@ -20,7 +20,7 @@ class AffiliateView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'templates/market/affiliate.html'
+    template_name = 'market/affiliate.html'
     context = dict()
 
     def get(self, request):

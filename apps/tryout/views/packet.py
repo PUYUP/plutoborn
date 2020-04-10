@@ -29,24 +29,22 @@ class PacketDetailView(LoginRequiredMixin, View):
     form = PasswordProtectForm
 
     def get_packet(self, packet_uuid=None, user=None):
-        print(user)
         try:
-            packet = Packet.objects \
-                .prefetch_related(Prefetch('questions')) \
+            acquired_packet = user.acquireds \
+                .prefetch_related(Prefetch('packet__questions')) \
                 .annotate(
-                    chance_total=Count('simulations', distinct=True, filter=Q(simulations__user_id=user.id)),
-                    question_total=Count('questions', distinct=True),
-                    theory_total=Count('questions__theory', distinct=True),
-                    acquired_id=F('acquireds__id'),
+                    chance_total=Count('packet__simulations', distinct=True, filter=Q(simulations__user_id=user.id)),
+                    question_total=Count('packet__questions', distinct=True),
+                    theory_total=Count('packet__questions__theory', distinct=True),
+                    acquired_id=F('packet__acquireds__id'),
                     in_simulate=Case(
-                        When(Q(simulations__isnull=False) & Q(simulations__user_id=user.id), then=Value(True)),
+                        When(Q(packet__simulations__isnull=False) & Q(packet__simulations__user_id=user.id), then=Value(True)),
                         default=Value(False),
                         output_field=BooleanField()
                     )
                 ) \
-                .get(uuid=packet_uuid, acquireds__user_id=user.id)
-
-            return packet
+                .get(packet__uuid=packet_uuid)
+            return getattr(acquired_packet, 'packet', None)
         except ObjectDoesNotExist:
             return redirect(reverse('bundle_list'))
 

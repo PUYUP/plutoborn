@@ -70,14 +70,15 @@ class BundleDetailView(LoginRequiredMixin, View):
 
         try:
             bundle = Bundle.objects \
+                .filter(status=PUBLISHED, uuid=bundle_uuid) \
                 .annotate(
                     total_packet=Count('packet', distinct=True),
                     is_boughted=Case(
                         When(boughts__user_id=user.id, then=Value(True)),
                         default=Value(False),
                         output_field=BooleanField()
-                    )) \
-                .get(status=PUBLISHED, uuid=bundle_uuid)
+                    )
+                ).get()
         except ObjectDoesNotExist:
             return redirect(reverse('bundle_list'))
 

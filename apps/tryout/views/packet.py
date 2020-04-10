@@ -29,6 +29,7 @@ class PacketDetailView(LoginRequiredMixin, View):
     form = PasswordProtectForm
 
     def get_packet(self, packet_uuid=None, user=None):
+        print(user)
         try:
             packet = Packet.objects \
                 .prefetch_related(Prefetch('questions')) \

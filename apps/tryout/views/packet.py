@@ -37,12 +37,7 @@ class PacketDetailView(LoginRequiredMixin, View):
                     chance_total=Count('simulations', distinct=True, filter=Q(simulations__user_id=user.id)),
                     question_total=Count('questions', distinct=True),
                     theory_total=Count('questions__theory', distinct=True),
-                    acquired_id=F('acquireds__id'),
-                    in_simulate=Case(
-                        When(Q(simulations__isnull=False) & Q(simulations__user_id=user.id), then=Value(True)),
-                        default=Value(False),
-                        output_field=BooleanField()
-                    )
+                    acquired_id=F('acquireds__id')
                 ).get()
 
             return packet

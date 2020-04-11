@@ -16,7 +16,7 @@ from apps.payment.utils.general import money_to_coin
 from utils.midtransclient.error_midtrans import MidtransAPIError
 
 from views.console.forms import (
-    TheoryForm, PacketForm, QuestionForm, ChoiceFormSet,
+    TheoryForm, PacketForm, QuestionForm, ChoiceFormSetFactory,
     BundleForm)
 
 Theory = get_model('tryout', 'Theory')
@@ -250,7 +250,7 @@ class QuestionEditorView(LoginRequiredMixin, View):
     template_name = 'console/master/question-editor.html'
     context = dict()
     form = QuestionForm
-    formset = ChoiceFormSet
+    formset = ChoiceFormSetFactory
 
     def get(self, request, packet_id=None, pk=None):
         try:

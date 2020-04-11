@@ -9,6 +9,7 @@
     <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-8 col-12">
             <a href="{% url 'dashboard_question_editor' packet.id %}" class="btn btn-success">Tambah</a>
+            <a href="{% url 'dashboard_question_reorder' packet.id %}" class="btn btn-warning ml-1">Reset Nomor</a>
 
             {% if messages %}
                 <ul class="messages list-unstyled mt-2 mb-2">

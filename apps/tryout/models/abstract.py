@@ -33,7 +33,7 @@ class AbstractTheory(models.Model):
     none_score = models.IntegerField(null=True)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
-    duration = models.IntegerField(blank=True, null=True, help_text=_("Durasi dalam menit."))
+    duration = models.IntegerField(blank=False, null=True, help_text=_("Durasi dalam menit."))
 
     class Meta:
         abstract = True
@@ -91,7 +91,7 @@ class AbstractQuestion(models.Model):
     theory = models.ForeignKey(
         'tryout.Theory',
         on_delete=models.SET_NULL,
-        blank=True, null=True,
+        blank=False, null=True,
         related_name='questions',
         limit_choices_to={'parent__isnull': True},
         verbose_name=_("Materi"))
@@ -99,7 +99,7 @@ class AbstractQuestion(models.Model):
         'tryout.Theory',
         on_delete=models.SET_NULL,
         blank=True, null=True,
-        related_name='+',
+        related_name='questions_sub_theory',
         limit_choices_to={'parent__isnull': False},
         verbose_name=_("Sub Materi"))
 

@@ -4,7 +4,7 @@
 
 {% block content_title %}
     <div class="row">
-        <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-10 col-xl-8">
             <div class="d-flex w-100 align-items-center">
                 {{ bundle.label }}
 
@@ -31,7 +31,7 @@
         </div>
     {% else %}
         <div class="row">
-            <div class="col-12 col-sm-12 col-md-10 col-lg-8">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-10 col-xl-8">
                 <div class="card">
                     <table class="table table-borderless">
                         <tr>
@@ -75,13 +75,33 @@
                             <td>
                                 <ul class="list-unstyled mb-0">
                                     {% for item in packets %}
-                                        <li><a href="{% url 'packet_detail' item.uuid %}">{{ item.label }}</a> &mdash; {{ item.question_total }} soal</li>
+                                        <li>{{ item.label }} &mdash; {{ item.question_total }} soal</li>
                                     {% endfor %}
                                 </ul>
                             </td>
                         </tr>
                     </table>
                 </div>
+
+                {% for item in packets %}
+                    <div class="card">
+                        <div class="card-body pb-0">
+                            <h5 class="mb-1">Detil Paket: {{ item.label }}</h5>
+
+                            <div class="row">
+                                {% for theory in item.theory %}
+                                    <div class="col-12 col-sm-6 col-md-4 mb-2">
+                                        <div class="h-100 border p-2">
+                                            <h6 class="font-weight-bolder">{{ theory.theory__label }}</h6>
+                                            <div class="d-block">Durasi {{ theory.theory__duration }} menit</div>
+                                            <div class="d-block">Jumlah soal {{ theory.question_total }}</div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div> <!-- /.theory list -->
+                {% endfor %}
             </div>
         </div>
 

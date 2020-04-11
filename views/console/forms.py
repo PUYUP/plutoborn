@@ -15,6 +15,7 @@ class TheoryForm(forms.ModelForm):
     class Meta:
         model = Theory
         fields = '__all__'
+        exclude = ('start_date', 'end_date', 'parent',)
         widgets = {
             'description': forms.Textarea(attrs={'rows':3}),
         }
@@ -24,6 +25,7 @@ class PacketForm(forms.ModelForm):
     class Meta:
         model = Packet
         fields = '__all__'
+        exclude = ('start_date', 'end_date', 'duration',)
         widgets = {
             'description': forms.Textarea(attrs={'rows':3}),
         }
@@ -39,6 +41,10 @@ class QuestionForm(forms.ModelForm):
 
 
 class ChoiceForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['identifier'].widget.attrs['readonly'] = True
+
     class Meta:
         model = Choice
         fields = '__all__'
@@ -59,6 +65,7 @@ class BundleForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'description': forms.Textarea(attrs={'rows':3}),
+            'packet': forms.CheckboxSelectMultiple(),
         }
 
     def clean(self):

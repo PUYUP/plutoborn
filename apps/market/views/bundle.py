@@ -3,13 +3,14 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import (
-    Count, Prefetch, Case, When, Value, BooleanField, F, DateTimeField, CharField)
+    Count, Prefetch, Case, When, Value, BooleanField, F, DateTimeField, CharField, Q)
 from django.core.exceptions import ObjectDoesNotExist
 
 from utils.generals import get_model
 from apps.market.utils.constant import PUBLISHED, GENERAL, NATIONAL
 
 Bundle = get_model('market', 'Bundle')
+Question = get_model('tryout', 'Question')
 
 
 class BundleListView(LoginRequiredMixin, View):
@@ -85,6 +86,12 @@ class BundleDetailView(LoginRequiredMixin, View):
         packets = bundle.packet \
             .prefetch_related(Prefetch('questions')) \
             .annotate(question_total=Count('questions', distinct=True))
+
+        for x in packets:
+            theory = x.questions.distinct() \
+                .values('theory', 'theory__label', 'theory__duration') \
+                .annotate(question_total=Count('theory__questions', distinct=True, filter=Q(theory__questions__packet_id=x.id)))
+            x.theory = theory
 
         self.context['bundle'] = bundle
         self.context['packets'] = packets

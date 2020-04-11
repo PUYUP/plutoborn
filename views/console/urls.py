@@ -4,7 +4,7 @@ from views.console.dashboard import DashboardView
 from views.console.master import (
     TheoryView, TheoryEditorView, TheoryDeleteView,
     PacketView, PacketEditorView, PacketDeleteView,
-    QuestionView, QuestionEditorView, QuestionDeleteView,
+    QuestionView, QuestionEditorView, QuestionDeleteView, QuestionReorderView,
     BundleView, BundleEditorView, BundleDeleteView,
     TopUpView, TopUpDetailView)
 
@@ -22,6 +22,7 @@ urlpatterns = [
     path('packet/<int:pk>/delete/', PacketDeleteView.as_view(), name='dashboard_packet_delete'),
 
     path('packet/<int:packet_id>/question/', QuestionView.as_view(), name='dashboard_question'),
+    path('packet/<int:packet_id>/question/reorder/', QuestionReorderView.as_view(), name='dashboard_question_reorder'),
     path('packet/<int:packet_id>/question/editor/', QuestionEditorView.as_view(), name='dashboard_question_editor'),
     path('packet/<int:packet_id>/question/<int:pk>/editor/', QuestionEditorView.as_view(), name='dashboard_question_editor'),
     path('packet/<int:packet_id>/question/<int:pk>/delete/', QuestionDeleteView.as_view(), name='dashboard_question_delete'),

@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.db.models import Count, Q, Sum
 
 from utils.generals import get_model
 from apps.payment.utils.constant import SETTLEMENT, CAPTURE, PENDING, EXPIRED
@@ -201,11 +202,45 @@ class QuestionView(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             return redirect(reverse('dashboard_packet'))
 
-        questions = Question.objects.filter(packet_id=packet_id)
+        questions = Question.objects.filter(packet_id=packet_id).order_by('numbering')
 
         self.context['packet'] = packet
         self.context['questions'] = questions
         return render(request, self.template_name, self.context)
+
+
+class QuestionReorderView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    template_name = 'console/master/question.html'
+    context = dict()
+
+    def get(self, request, packet_id=None, pk=None):
+        try:
+            packet = Packet.objects.get(id=packet_id)
+        except ObjectDoesNotExist:
+            return redirect(reverse('dashboard_packet'))
+
+        questions_order = packet.questions.all().order_by('id')
+        questions_order_theory = packet.questions.filter(packet_id=packet.id).order_by('id')
+
+        questions_list = list()
+        questions_theory_list = list()
+
+        for index, item in enumerate(questions_order):
+            numbering = index + 1
+            setattr(item, 'numbering', numbering)
+            questions_list.append(item)
+
+        for index, item in enumerate(questions_order_theory):
+            numbering = index + 1
+            setattr(item, 'numbering_local', numbering)
+            questions_theory_list.append(item)
+
+        Question.objects.bulk_update(questions_list, ['numbering'])
+        Question.objects.bulk_update(questions_theory_list, ['numbering_local'])
+        return redirect(reverse('dashboard_question', kwargs={'packet_id': packet.id}))
 
 
 class QuestionEditorView(LoginRequiredMixin, View):
@@ -228,8 +263,9 @@ class QuestionEditorView(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             queryset = None
 
+        identifiers = ['A', 'B', 'C', 'D', 'E']
         self.context['form'] = self.form(instance=queryset)
-        self.context['formset'] = self.formset(instance=queryset)
+        self.context['formset'] = self.formset(instance=queryset, initial=[{'identifier': x} for x in identifiers])
         self.context['queryset'] = queryset
         self.context['packet'] = packet
         self.context['messages'] = messages.get_messages(request)

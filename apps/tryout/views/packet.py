@@ -47,9 +47,17 @@ class PacketDetailView(LoginRequiredMixin, View):
     def get(self, request, packet_uuid=None):
         user = request.user
         packet = self.get_packet(packet_uuid=packet_uuid, user=user)
-        simulations = packet.simulations.filter(user_id=request.user.id).order_by('-date_created')
-        bundle = packet.bundle_set.first()
-        bundle_password = packet.bundle_set.filter(password__isnull=False, bundle_passwords__isnull=False)
+
+        simulations = getattr(packet, 'simulations', None)
+        if simulations:
+            simulations = packet.simulations.filter(user_id=request.user.id).order_by('-date_created')
+
+        bundle_password = None
+        bundle = getattr(packet, 'bundle_set', None)
+        if bundle:
+            bundle = packet.bundle_set.first()
+            bundle_password = packet.bundle_set.filter(password__isnull=False, bundle_passwords__isnull=False)
+            bundle_password = bundle_password.exists()
 
         self.context['SCORE'] = SCORE
         self.context['NATIONAL'] = NATIONAL
@@ -57,7 +65,7 @@ class PacketDetailView(LoginRequiredMixin, View):
         self.context['bundle'] = bundle
         self.context['simulations'] = simulations
         self.context['form'] = self.form(bundle=bundle, request=request)
-        self.context['bundle_password'] = bundle_password.exists()
+        self.context['bundle_password'] = bundle_password
         self.context['program_studies'] = ProgramStudy.objects.all()
         return render(request, self.template_name, self.context)
 

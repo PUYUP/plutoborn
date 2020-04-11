@@ -110,7 +110,7 @@
                     <span class="d-block font-weight-bold mb-1">Nomor Soal</span>
                     <ul class="list-unstyled d-flex w-100 flex-wrap">
                         {% for item in questions %}
-                            <li id="question-numbering-{{ item.id }}" class="pr-1">
+                            <li id="question-numbering-{{ item.id }}" class="pr-1 pb-1">
                                 <button type="button" id="get-question" class="rounded-0 pl-0 pr-0 btn 
                                     {% if item.answer_id %}
                                         {% if item.choice_id %}

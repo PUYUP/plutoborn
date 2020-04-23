@@ -24,13 +24,15 @@
                         <thead>
                             <tr>
                                 <th>Nama</th>
-                                <th>Aksi</th>
+                                <th>Jeni Skor</th>
+                                <th style="width:60px">Aksi</th>
                             </tr>
                         </thead>
 
                         {% for item in theories %}
                             <tr>
                                 <td>{{ item.label }}</td>
+                                <td>{{ item.get_scoring_type_display }}</td>
                                 <td>
                                     <a href="{% url 'dashboard_theory_editor' item.id %}" class="btn btn-sm btn-primary">Edit</a>
                                 </td>

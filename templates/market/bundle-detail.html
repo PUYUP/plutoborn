@@ -38,16 +38,18 @@
             <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
                 <div class="card">
                     <table class="table-sm-del table table-borderless">
-                        <tr>
-                            <td class="w-25">Status</td>
-                            <td class="font-weight-bold">
-                                {% if not is_accept %}
-                                    <span class="badge badge-danger">Belum Aktif</span>
-                                {% else %}
-                                    <span class="badge badge-success">Aktif</span>
-                                {% endif %}
-                            </td>
-                        </tr>
+                        {% if is_boughted %}
+                            <tr>
+                                <td class="w-25">Status</td>
+                                <td class="font-weight-bold">
+                                    {% if not is_accept %}
+                                        <span class="badge badge-danger">Belum Aktif</span>
+                                    {% else %}
+                                        <span class="badge badge-success">Aktif</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endif %}
     
                         <tr>
                             <td class="w-25">Nama</td>

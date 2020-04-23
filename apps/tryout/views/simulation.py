@@ -22,6 +22,7 @@ Simulation = get_model('tryout', 'Simulation')
 Answer = get_model('tryout', 'Answer')
 Question = get_model('tryout', 'Question')
 Choice = get_model('tryout', 'Choice')
+Theory = get_model('tryout', 'Theory')
 
 
 class SimulationExamView(LoginRequiredMixin, View):
@@ -261,8 +262,10 @@ class SimulationRankingView(LoginRequiredMixin, View):
         ranking_theory = int(request.session.get('ranking_theory', 0))
 
         theories = packet.questions.filter(theory__isnull=False) \
+            .annotate(question_count=Count('theory__questions', distinct=True)) \
             .values('theory', 'theory__pk', 'theory__label', 'theory__true_score',
-                    'theory__false_score', 'theory__none_score') \
+                    'theory__false_score', 'theory__none_score', 'theory__scoring_type',
+                    'question_count') \
             .distinct()
 
         theories_params = dict()
@@ -272,8 +275,18 @@ class SimulationRankingView(LoginRequiredMixin, View):
         if ranking_theory:
             theories_filtered = theories.filter(theory__id=ranking_theory)
 
+        to = Theory.objects.filter(questions__packet_id=OuterRef('packet_id')) \
+            .annotate(
+                question_total=Count(
+                    'questions', distinct=True,
+                    output_field=IntegerField()
+                )
+            )
+
         for item in theories_filtered:
             theory_id = item['theory__pk']
+            scoring_type = item['theory__scoring_type']
+            question_count = item['question_count']
 
             at = 'theory_{}_true_count'.format(theory_id)
             af = 'theory_{}_false_count'.format(theory_id)
@@ -285,9 +298,31 @@ class SimulationRankingView(LoginRequiredMixin, View):
 
             ts = 'theory_{}_total_score'.format(theory_id)
             tn = 'theory_{}_verbose_name'.format(theory_id)
+            st = 'theory_{}_scoring_type'.format(theory_id)
+
+            qt = 'theory_{}_question_total'.format(theory_id)
+            pt_s = 'theory_{}_preference_score_total'.format(theory_id)
 
             # verbose name
             theories_params[tn] = Value(item['theory__label'], output_field=CharField())
+            theories_params[st] = Value(scoring_type, output_field=CharField())
+
+            # count questions
+            theories_params[qt] = Subquery(to.filter(id=theory_id).values('question_total')[:1])
+
+            # score by preference
+            theories_params[pt_s] = Sum(
+                Case(
+                    When(
+                        Q(answers__question__theory__id=theory_id)
+                        & Q(answers__question__theory__scoring_type=PREFERENCE)
+                        & Q(answers__choice__isnull=False),
+                        then=F('answers__choice__score')
+                    ),
+                    output_field=IntegerField(),
+                    default=Value(0)
+                )
+            )
 
             # count right choice
             theories_params[at] = Sum(
@@ -333,10 +368,14 @@ class SimulationRankingView(LoginRequiredMixin, View):
             )
             theories_params[an_s] = F(an) * item['theory__none_score']
 
-            # sum all theory score
-            theories_params[ts] = (F(at) * item['theory__true_score']) \
-                + (F(an) * item['theory__none_score']) \
-                - (F(af) * item['theory__false_score'])
+            if scoring_type == TRUE_FALSE_NONE:
+                # sum all theory score
+                theories_params[ts] = (F(at) * item['theory__true_score']) \
+                    + (F(an) * item['theory__none_score']) \
+                    - (F(af) * item['theory__false_score'])
+
+            elif scoring_type == PREFERENCE:
+                theories_params[ts] = F(pt_s)
 
             # prepare total score
             theories_total_score.append(F(ts))
@@ -351,23 +390,28 @@ class SimulationRankingView(LoginRequiredMixin, View):
                     default=False,
                     output_field=BooleanField()
                 ),
-            ).order_by('-total_score')
+            ) \
+            .order_by('-total_score')
 
         theory_ids = [item['theory__pk'] for item in theories_filtered]
         for item in simulations:
             tgs = list()
             for tid in theory_ids:
+                st = 'theory_{}_scoring_type'.format(tid)
                 tn = 'theory_{}_verbose_name'.format(tid)
                 ts = 'theory_{}_total_score'.format(tid)
                 at_s = 'theory_{}_true_score'.format(tid)
                 af_s = 'theory_{}_false_score'.format(tid)
                 an_s = 'theory_{}_none_score'.format(tid)
+                pt_s = 'theory_{}_preference_score_total'.format(tid)
 
                 label = getattr(item, tn, None)
                 true_score = getattr(item, at_s, 0)
                 false_score = getattr(item, af_s, 0)
                 none_score = getattr(item, an_s, 0)
                 total_score = getattr(item, ts, 0)
+                preference_total_score = getattr(item, pt_s, 0)
+                scoring_type = getattr(item, st, None)
 
                 tg = {
                     'label': label,
@@ -375,6 +419,8 @@ class SimulationRankingView(LoginRequiredMixin, View):
                     'false_score': false_score,
                     'none_score': none_score,
                     'total_score': total_score,
+                    'preference_total_score': preference_total_score,
+                    'scoring_type': scoring_type,
                 }
                 tgs.append(tg)
             item.theory_groups = tgs
@@ -392,6 +438,8 @@ class SimulationRankingView(LoginRequiredMixin, View):
 
         pagination = Pagination(request, simulations, simulations_pagination, page_num, paginator)
 
+        self.context['TRUE_FALSE_NONE'] = TRUE_FALSE_NONE
+        self.context['PREFERENCE'] = PREFERENCE
         self.context['pagination'] = pagination
         self.context['simulation'] = simulation
         self.context['simulations'] = simulations

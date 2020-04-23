@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from utils.generals import get_model
 from apps.market.utils.constant import PUBLISHED, NATIONAL
+from apps.tryout.utils.constant import PREFERENCE, TRUE_FALSE_NONE
 
 Simulation = get_model('tryout', 'Simulation')
 Bundle = get_model('market', 'Bundle')
@@ -40,7 +41,7 @@ class HomeView(LoginRequiredMixin, View):
 
         theories = packet.questions.filter(theory__isnull=False) \
             .values('theory', 'theory__pk', 'theory__label', 'theory__true_score',
-                    'theory__false_score', 'theory__none_score') \
+                    'theory__false_score', 'theory__none_score', 'theory__scoring_type') \
             .distinct()
 
         theories_params = dict()
@@ -48,6 +49,7 @@ class HomeView(LoginRequiredMixin, View):
 
         for item in theories:
             theory_id = item['theory__pk']
+            scoring_type = item['theory__scoring_type']
 
             at = 'theory_{}_true_count'.format(theory_id)
             af = 'theory_{}_false_count'.format(theory_id)
@@ -60,8 +62,24 @@ class HomeView(LoginRequiredMixin, View):
             ts = 'theory_{}_total_score'.format(theory_id)
             tn = 'theory_{}_verbose_name'.format(theory_id)
 
+            pt_s = 'theory_{}_preference_score_total'.format(theory_id)
+
             # verbose name
             theories_params[tn] = Value(item['theory__label'], output_field=CharField())
+
+            # score by preference
+            theories_params[pt_s] = Sum(
+                Case(
+                    When(
+                        Q(answers__question__theory__id=theory_id)
+                        & Q(answers__question__theory__scoring_type=PREFERENCE)
+                        & Q(answers__choice__isnull=False),
+                        then=F('answers__choice__score')
+                    ),
+                    output_field=IntegerField(),
+                    default=Value(0)
+                )
+            )
 
             # count right choice
             theories_params[at] = Sum(
@@ -108,9 +126,14 @@ class HomeView(LoginRequiredMixin, View):
             theories_params[an_s] = F(an) * item['theory__none_score']
 
             # sum all theory score
-            theories_params[ts] = (F(at) * item['theory__true_score']) \
-                + (F(an) * item['theory__none_score']) \
-                - (F(af) * item['theory__false_score'])
+            if scoring_type == TRUE_FALSE_NONE:
+                # sum all theory score
+                theories_params[ts] = (F(at) * item['theory__true_score']) \
+                    + (F(an) * item['theory__none_score']) \
+                    - (F(af) * item['theory__false_score'])
+
+            elif scoring_type == PREFERENCE:
+                theories_params[ts] = F(pt_s)
 
             # prepare total score
             theories_total_score.append(F(ts))
@@ -131,17 +154,21 @@ class HomeView(LoginRequiredMixin, View):
 
         tgs = list()
         for tid in theory_ids:
+            st = 'theory_{}_scoring_type'.format(tid)
             tn = 'theory_{}_verbose_name'.format(tid)
             ts = 'theory_{}_total_score'.format(tid)
             at_s = 'theory_{}_true_score'.format(tid)
             af_s = 'theory_{}_false_score'.format(tid)
             an_s = 'theory_{}_none_score'.format(tid)
+            pt_s = 'theory_{}_preference_score_total'.format(tid)
 
             label = getattr(simulation, tn, None)
             true_score = getattr(simulation, at_s, 0)
             false_score = getattr(simulation, af_s, 0)
             none_score = getattr(simulation, an_s, 0)
             total_score = getattr(simulation, ts, 0)
+            preference_total_score = getattr(item, pt_s, 0)
+            scoring_type = getattr(item, st, None)
 
             tg = {
                 'label': label,
@@ -149,6 +176,8 @@ class HomeView(LoginRequiredMixin, View):
                 'false_score': false_score,
                 'none_score': none_score,
                 'total_score': total_score,
+                'preference_total_score': preference_total_score,
+                'scoring_type': scoring_type,
             }
             tgs.append(tg)
 

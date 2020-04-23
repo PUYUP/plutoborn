@@ -62,9 +62,13 @@
 
                         <tr class="text-center bg-light text-white">
                             {% for theory in theories_filtered %}
-                                <th>B</th>
-                                <th>S</th>
-                                <th>K</th>
+                                {% if theory.theory__scoring_type == TRUE_FALSE_NONE %}
+                                    <th>B</th>
+                                    <th>S</th>
+                                    <th>K</th>
+                                {% elif theory.theory__scoring_type == PREFERENCE %}
+                                    <th colspan="3" class="text-center">Skor</th>
+                                {% endif %}
                             {% endfor %}
 
                             <th>B - S + K</th>
@@ -76,9 +80,13 @@
                                 <td>{{ item.user.username }}</td>
 
                                 {% for theory in item.theory_groups %}
-                                    <td class="text-center">{{ theory.true_score }}</td>
-                                    <td class="text-center">{{ theory.false_score }}</td>
-                                    <td class="text-center">{{ theory.none_score }}</td>
+                                    {% if theory.scoring_type == TRUE_FALSE_NONE %}
+                                        <td class="text-center">{{ theory.true_score }}</td>
+                                        <td class="text-center">{{ theory.false_score }}</td>
+                                        <td class="text-center">{{ theory.none_score }}</td>
+                                    {% elif theory.scoring_type == PREFERENCE %}
+                                        <td colspan="3" class="text-center">{{ theory.preference_total_score }}</td>
+                                    {% endif %}
                                 {% endfor %}
 
                                 <td class="text-center">{{ item.total_score }}</td>

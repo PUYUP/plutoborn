@@ -13,12 +13,16 @@
                         <div class="card-body">
                             <div id="question-wrap">
                                 <div id="question-item-{{ question.id }}">
+                                    {% if question.theory %}<span class="badge badge-secondary d-block mb-2">{{ question.theory.label }}</span>{% endif %}
+            
                                     <h4 class="d-flex w-100 align-items-start">
                                         <button type="button" class="btn btn-outline-primary bg-white rounded-0">
                                             {{ question.numbering|safe }}
                                         </button>
 
-                                        <span class="pl-2">{{ question.label|safe }}</span>
+                                        <span class="pl-2">
+                                            {{ question.label|safe }}
+                                        </span>
                                     </h4>
 
                                     {% if question.description %}
@@ -78,9 +82,9 @@
                                         </div>
                                     </div> <!-- /.answer -->
 
-                                    <h6 class="font-weight-bolder">Penjelasan</h6>
-                                    {% if choice.explanation %}
-                                        <div class="d-block">{{ choice.explanation|safe }}</div>
+                                    <h6 class="font-weight-bolder">Pembahasan</h6>
+                                    {% if question.explanation %}
+                                        <div class="d-block">{{ question.explanation|safe }}</div>
                                     {% else %}
                                         &mdash;
                                     {% endif %}
@@ -255,6 +259,7 @@
 {% endblock %}
 
 {% block js %}
+    <script async charset="utf-8" src="//cdn.embedly.com/widgets/platform.js"></script>
     <script src="{% static 'app-assets/vendors/js/charts/apexcharts.min.js' %}"></script>
 
     <script type="text/javascript">
@@ -326,6 +331,8 @@
                         </div>`;
 
                         var questionBlock = `<div id="question-item-${question.id}">
+                            ${question.theory ? '<span class="badge badge-secondary d-block mb-2">' + question.theory_label + '</span>' : ''}
+
                             <h4 class="d-flex w-100 align-items-start">
                                 <button type="button" class="btn btn-outline-primary bg-white rounded-0">${question.numbering}</button>
                                 <span class="pl-2">${question.label}</span>
@@ -365,11 +372,12 @@
                                 </div>
                             </div> <!-- /.answer -->
 
-                            <h6 class="font-weight-bolder">Penjelasan</h6>
-                            ${choice.explanation ? '<div class="d-block">' + choice.explanation + '</div>' : ' &mdash;'}
+                            <h6 class="font-weight-bolder">Pembahasan</h6>
+                            ${question.explanation ? '<div class="d-block">' + question.explanation + '</div>' : ' &mdash;'}
                         </div>`;
 
                         $('#question-wrap').html(questionBlock);
+                        showoEmbed();
                     }
                 });
             }
@@ -442,5 +450,23 @@
             );
             statisticsRadialChart.render();
         {% endfor %}
+
+        // ...
+        // SHOW oEmbed content
+        // ...
+        function showoEmbed() {
+            document.querySelectorAll( 'oembed[url]' ).forEach( element => {
+                // Create the <a href="..." class="embedly-card"></a> element that Embedly uses
+                // to discover the media.
+                const anchor = document.createElement( 'a' );
+
+                anchor.setAttribute( 'href', element.getAttribute( 'url' ) );
+                anchor.className = 'embedly-card';
+
+                element.appendChild( anchor );
+            } );
+        }
+
+        showoEmbed();
     </script>
 {% endblock %}

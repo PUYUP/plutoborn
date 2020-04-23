@@ -5,7 +5,7 @@
 
 {% block content_title %}
     <div class="row">
-        <div class="col-12 col-sm-12 col-md-12 col-lg-8">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
             <div class="d-flex w-100 align-items-center">
                 {% if bundle.simulation_type == NATIONAL %}
                     <span class="text-success text-uppercase font-weight-bolder">
@@ -37,7 +37,7 @@
         </div>
     {% else %}
         <div class="row">
-            <div class="col-12 col-sm-12 col-md-12 col-lg-8">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
                 {% if bundle.password and not bundle_password %}
                     <div class="card">
                         <form action="{% url 'packet_detail' packet.uuid %}" class="card-body" method="post">
@@ -68,7 +68,18 @@
                 {% endif %}
 
                 <div class="card">
-                    <table class="table table-borderless">
+                    <table class="table-sm-del table table-borderless">
+                        <tr>
+                            <td class="w-25 pb-0">Status</td>
+                            <td class="font-weight-bold pb-0">
+                                {% if packet.acquired_status == HOLD %}
+                                    <span class="badge badge-danger">Belum Aktif</span>
+                                {% else %}
+                                    <span class="badge badge-success">Aktif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
                         <tr>
                             <td class="w-25 pb-0">Nama</td>
                             <td class="font-weight-bold pb-0">{{ packet.label|safe }}</td>
@@ -163,6 +174,24 @@
                     </table>
                 </div> <!-- /.detail -->
 
+                <div class="card">
+                    <div class="card-body pb-0">
+                        <h5 class="mb-1">Daftar Materi</h5>
+
+                        <div class="row">
+                            {% for theory in theories %}
+                                <div class="col-12 col-sm-6 col-md-4 mb-2">
+                                    <div class="h-100 border p-2">
+                                        <h6 class="font-weight-bolder">{{ theory.theory__label }}</h6>
+                                        <div class="d-block">Durasi {{ theory.theory__duration }} menit</div>
+                                        <div class="d-block">Jumlah soal {{ theory.question_total }}</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div> <!-- /.theory list -->
+
                 {% if simulations.exists %}
                     <h6>Riwayat Percobaan</h6>
 
@@ -210,7 +239,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <table class="table table-borderless"> 
+                        <table class="table-sm-del table table-borderless"> 
                             <tr>
                                 <td class="pl-0">Harga</td>
                                 <td class="pr-0 font-weight-bold text-right"><span id="coin-amount"></span> koin</td>
@@ -305,7 +334,7 @@
                     Swal.fire({
                         type: 'error',
                         title: 'Kesalahan',
-                        text: msg,
+                        html: msg,
                     });
                 }
             });

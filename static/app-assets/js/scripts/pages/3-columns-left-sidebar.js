@@ -29,7 +29,7 @@ $(document).ready(function() {
     /*************************************
     *        Default Score Rating        *
     **************************************/
-    $.fn.raty.defaults.path = 'https://pluto-tryout.herokuapp.com/static/app-assets/images/raty/';
+    $.fn.raty.defaults.path = siteURL + 'static/app-assets/images/raty/';
 
     $('#score-rating').raty({
         score: 3

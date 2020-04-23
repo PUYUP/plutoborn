@@ -16,6 +16,7 @@ Answer = get_model('tryout', 'Answer')
 Acquired = get_model('tryout', 'Acquired')
 Simulation = get_model('tryout', 'Simulation')
 ProgramStudy = get_model('tryout', 'ProgramStudy')
+Category = get_model('tryout', 'Category')
 
 
 class ChoiceInlineForm(BaseInlineFormSet):
@@ -93,3 +94,4 @@ admin.site.register(Answer, AnswerAdmin)
 admin.site.register(Acquired)
 admin.site.register(Simulation, SimulationAdmin)
 admin.site.register(ProgramStudy)
+admin.site.register(Category)

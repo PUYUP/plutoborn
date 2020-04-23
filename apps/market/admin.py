@@ -7,6 +7,9 @@ from utils.generals import get_model
 
 Bundle = get_model('market', 'Bundle')
 Bought = get_model('market', 'Bought')
+BoughtProof = get_model('market', 'BoughtProof')
+BoughtProofRequirement = get_model('market', 'BoughtProofRequirement')
+BoughtProofDocument = get_model('market', 'BoughtProofDocument')
 Packet = get_model('tryout', 'Packet')
 Voucher = get_model('market', 'Voucher')
 VoucherRedeem = get_model('market', 'VoucherRedeem')
@@ -36,9 +39,19 @@ class BundleAdminForm(ModelForm):
         return self.cleaned_data
 
 
+class BoughtProofDocumentInline(admin.StackedInline):
+    model = BoughtProofDocument
+    readonly_fields = ['user']
+
+
 class BundleExtend(admin.ModelAdmin):
     model = Bundle
     form = BundleAdminForm
+
+
+class BoughtProofExtend(admin.ModelAdmin):
+    model = BoughtProof
+    inlines = [BoughtProofDocumentInline,]
 
 
 # Register your models here.
@@ -50,3 +63,6 @@ admin.site.register(Affiliate)
 admin.site.register(AffiliateAcquired)
 admin.site.register(AffiliateCommission)
 admin.site.register(AffiliateCapture)
+admin.site.register(BoughtProof, BoughtProofExtend)
+admin.site.register(BoughtProofRequirement)
+admin.site.register(BoughtProofDocument)

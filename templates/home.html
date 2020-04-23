@@ -1,107 +1,466 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block head_title %}Beranda{% endblock %}
-{% block content_title %}Ranking Nasional{% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" type="text/css" href="{% static 'app-assets/vendors/css/calendars/tui-time-picker.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'app-assets/vendors/css/calendars/tui-date-picker.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'app-assets/vendors/css/calendars/tui-calendar.min.css' %}">
+
+    <style type="text/css">
+        #countdown > div {
+            margin-right: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        #countdown .digit {
+            display: block;
+            margin-bottom: -1px;
+            font-size: 17px;
+            font-weight: bold !important;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
     <div class="main-content">
-        <div class="card">
-            <div class="card-body">
-                <form action="{% url 'home' %}" method="post">
-                    {% csrf_token %}
-
-                    <div class="row mb-2">
-                        <div class="col-6 col-sm-6 col-md-5">
-                            <div class="form-group">
-                                <label for="chance">Paket</label>
-                                <select name="packet" class="form-control w-100 rounded-0">
-                                    <option value="0">Semua Paket</option>
-                                    {% for item in packets %}
-                                        <option value="{{ item.id }}" {% if ranking_packet == item.id %}selected{% endif %}>{{ item.label }}</option>
-                                    {% endfor %}
-                                </select>
+        <div class="row">
+            <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4 col-12 mb-3">
+                <div class="card w-100 h-100 mb-0">
+                    <div class="card-header">
+                        <h3 class="greeting-text text-capitalize">Selamat Datang {{ user.username }}</h3>
+                        <p class="mb-0">Ingin Try Out apa hari ini?</p>
+                    </div>
+                    <div class="card-content mt-1">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-end">
+                                <div class="dashboard-content-left">
+                                    <h1 class="text-primary font-large-2 text-bold-500">{{ user.acquireds.count }}</h1>
+                                    <p>Total Try Out yang telah Anda lakukan.</p>
+                                    <a href="{% url 'profile' %}" type="button" class="btn btn-primary glow">Sunting Profil</a>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        {% if packet %}
-                            <div class="col-6 col-sm-6 col-md-3">
-                                <div class="form-group">
-                                    <label for="chance">Materi</label>
-                                    <select name="theory" class="form-control w-100 rounded-0">
-                                        <option value="0">Semua Materi</option>
-                                        {% for item in theories %}
-                                            <option value="{{ item.theory_id }}" {% if ranking_theory == item.theory_id %}selected{% endif %}>{{ item.theory__label }}</option>
-                                        {% endfor %}
-                                    </select>
+            <div class="col-sm-6 col-md-6 col-lg-4 col-xl-4 col-6 mb-3">
+                <div class="card text-center w-100 h-100 mb-0 d-flex align-items-center justify-content-center">
+                    <div class="card-content">
+                        <div class="card-body py-1">
+                            <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
+                                <i class="bx bxl-bitcoin font-medium-5"></i>
+                            </div>
+                            <div class="text-muted line-ellipsis">Koin Aktif</div>
+                            <h3 class="mb-0">
+                                {{ my_coins.total_active|intcomma|safe }}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-6 col-lg-4 col-xl-4 col-6 mb-3">
+                <div class="card text-center w-100 h-100 mb-0 d-flex align-items-center justify-content-center">
+                    <div class="card-content">
+                        <div class="card-body py-1">
+                            <div class="badge-circle badge-circle-lg badge-circle-light-success mx-auto mb-50">
+                                <i class="bx bx-gift font-medium-5"></i>
+                            </div>
+                            <div class="text-muted line-ellipsis">Poin Aktif</div>
+                            <h3 class="mb-0">{{ my_points.total_active|intcomma|safe }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- /.col -->
+        </div> <!-- /.row -->
+
+        {% if bundles %}
+            <hr />
+
+            <div class="d-flex w-100 align-items-center mb-2">
+                <h5 class="mb-0">Paket Tersedia</h5>
+                <a href="{% url 'bundle_list' %}" class="ml-auto btn btn-warning pl-2 pr-2 btn-sm">Lihat Semua</a>
+            </div>
+            
+            <div class="row">
+                {% for item in bundles %}
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-3">
+                        <div class="card bundle h-100 mb-0">
+                            <div class="card-body d-flex w-100 flex-column">
+                                <h5 class="card-title">
+                                    <a href="{% url 'bundle_detail' item.uuid %}">{{ item.label|safe }}</a>
+                                </h5>
+
+                                <div class="meta d-block pb-1">
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Harga</span>
+                                        <span>
+                                            {% if item.coin_amount %}
+                                                {{ item.coin_amount|intcomma|safe }} Koin
+                                            {% else %}
+                                                Gratis
+                                            {% endif %}
+                                        </span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Isi Bundel</span>
+                                        <span>{{ item.total_packet|intcomma|safe }} Paket</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Tipe Simulasi</span>
+                                        <span>{{ item.get_simulation_type_display }}</span>
+                                    </p>
+                                    
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Dimulai pada</span>
+                                        <span>
+                                            {% if item.start_date %}
+                                                {{ item.start_date|date:'d-m-Y H:i' }}
+                                            {% else %}
+                                                Kapan saja
+                                            {% endif %}
+                                        </span>
+                                    </p>
                                 </div>
+
+                                <a href="{% url 'bundle_detail' item.uuid %}" class="btn btn-info btn-sm text-uppercase mt-auto">
+                                    Lihat
+                                </a>
+                            </div>
+                        </div>
+                    </div> <!-- /.col -->
+                {% endfor %}
+            </div> <!-- /.row -->
+        {% endif %}
+
+        {% if packets %}
+            <hr />
+
+            <div class="d-flex w-100 align-items-center mb-2">
+                <h5 class="mb-0">Paket Saya</h5>
+                <a href="{% url 'bundle_list_enrolled' %}" class="ml-auto btn btn-warning pl-2 pr-2 btn-sm">Lihat Semua</a>
+            </div>
+
+            <div class="row">
+                {% for item in packets %}
+                    <div class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 mb-3">
+                        <div class="card bundle h-100 mb-0">
+                            <div class="card-body d-flex w-100 flex-column">
+                                <h5 class="card-title">
+                                    <a href="{% url 'packet_detail' item.packet.uuid %}">{{ item.packet.label|safe }}</a>
+                                </h5>
+
+                                <div class="d-block pb-1 meta">
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Jumlah soal</span>
+                                        <span>{{ item.question_total|intcomma|safe }} Soal</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Jumlah materi</span>
+                                        <span>{{ item.theory_total|intcomma|safe }} Materi</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Jenis</span>
+                                        <span>{{ item.packet.get_classification_display }}</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Tipe Simulasi</span>
+                                        <span>{{ item.x_simulation_type }}</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Dimulai pada</span>
+                                        <span>{{ item.x_start_date|date:'d-m-Y H:i' }}</span>
+                                    </p>
+                                </div>
+
+                                <a href="{% url 'packet_detail' item.packet.uuid %}" class="btn btn-primary btn-sm text-uppercase mt-auto">
+                                    <i class="bx bx-notepad"></i>
+                                    Lihat
+                                </a>
+                            </div>
+                        </div>
+                    </div> <!-- /.col -->
+                {% endfor %}
+            </div> <!-- /.row -->
+        {% endif %}
+
+        <div class="row">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
+                <div class="card">
+                    <div class="card-body">
+                        {% if simulation_due %}
+                            <table class="table-sm-del table table-bordered mb-4 table-sm-del">
+                                <tr class="bg-secondary font-weight-bold text-white">
+                                    <th colspan="2" style="border-left:1px solid #475F7B; border-top:1px solid #475F7B; border-right:1px solid #475F7B;">
+                                        <div class="d-flex w-100 align-items-center">
+                                            Try Out berikutnya
+
+                                            <a href="{% url 'bundle_detail' simulation_due.uuid %}" class="btn btn-warning pl-2 pr-2 ml-auto btn-sm">Lihat</a>
+                                        </div>
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    <td class="w-25">Bundel</td>
+                                    <td>{{ simulation_due.label }}</td>
+                                </tr>
+
+                                <tr>
+                                    <td class="w-25 align-middle">Dibuka Dalam</td>
+                                    <td class="align-middle">
+                                        <div id="countdown" class="d-flex"></div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="w-25">Harga</td>
+                                    <td>
+                                        {% if simulation_due.coin_amount %}
+                                            {{ simulation_due.coin_amount }} Koin
+                                        {% else %}
+                                            Gratis
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        {% endif %}
+
+                        <!-- calendar Wrapper  -->
+                        <div class="calendar-wrapper position-relative">
+                            <div class="calendar-view">
+                                <div class="calendar-action d-flex align-items-center flex-wrap mb-1">
+                                    <!-- calenadar next and previous navigate button -->
+                                    <span id="menu-navi" class="menu-navigation">
+                                        <button type="button" class="btn btn-icon btn-action btn-primary move-day mr-50 px-50" data-action="move-prev">
+                                            <i class="bx bx-chevron-left" data-action="move-prev"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-icon btn-action btn-primary  move-day mr-50 px-50" data-action="move-next">
+                                            <i class="bx bx-chevron-right" data-action="move-next"></i>
+                                        </button>
+                                    </span>
+                                    <span id="renderRange" class="render-range font-weight-bold" style="font-size:18px;"></span>
+                                </div>
+                                
+                                <div id="calendar" class="calendar-content border"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- /.calendar -->
+
+            <div class="col-12 col-sm-12 col-md-12 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="mb-1">
+                            <span class="text-muted"><i>Try Out Terakhir</i></span>
+                            <div class="d-block" style="margin-top:3px;">
+                                {% if simulation_stat %}
+                                    <a href="{% url 'simulation_detail' simulation_stat.simulation.uuid %}">
+                                        <strong>{{ simulation_stat.simulation.packet.label }}</strong>
+                                    </a>
+                                {% else %}
+                                    Belum Ikut Try Out Apapun
+                                {% endif %}
+                            </div>
+                        </h6>
+
+                        {% if simulation_stat %}
+                            <table class="table-sm-del table mb-0 table-bordered table-sm-del">
+                                <tr>
+                                    <th>Ranking</th>
+                                    <th class="w-25 text-center">{{ simulation_stat.rank }}</th>
+                                </tr>
+
+                                {% for item in simulation_stat.simulation.theory_groups %}
+                                    <tr>
+                                        <td>{{ item.label }}</td>
+                                        <td class="w-25 text-center">{{ item.total_score }}</td>
+                                    </tr>
+                                {% endfor %}
+
+                                <tr class="bg-secondary text-white">
+                                    <td style="border-left:1px solid #475F7B; border-bottom:1px solid #475F7B;">Total Skor</td>
+                                    <td class="w-25 text-center" style="border-right:1px solid #475F7B; border-bottom:1px solid #475F7B;">{{ simulation_stat.simulation.total_score }}</td>
+                                </r>
+                            </table>
+                        {% else %}
+                            <div class="alert alert-warning mb-0">
+                                Anda belum mengitu tryout apapun.
                             </div>
                         {% endif %}
-            
-                        {% if simulation_count %}
-                            <div class="col-6 col-sm-6 col-md-2">
-                                <div class="form-group">
-                                    <label for="chance">Simulai Ke?</label>
-                                    <select name="chance" class="form-control w-100 rounded-0">
-                                        {% for i in "x"|rjust:simulation_count %}
-                                            <option value="{{ forloop.counter }}" {% if forloop.counter == ranking_chance %}selected{% endif %}>{{ forloop.counter }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div> <!-- /.col -->
-                        {% endif %}
-
-                        <div class="col-6 col-sm-6 col-md-2">
-                            <label for="chance">&nbsp;</label>
-                            <button type="submit" class="btn btn-warning btn-block rounded-0">Saring</button>
-                        </div> <!-- /.col -->
                     </div>
-                </form>
-            
-                {% if not answer_scores %}
-                    <div class="alert alert-info mb-0">Anda belum memberikan filter. Pilih Paket terlebih dahulu.</div>
-                {% else %}  
-                    <table class="table table-striped text-center mb-0">
-                        <thead>
-                            <tr class="bg-light font-weight-bold">
-                                <th>Ranking</th>
-                                <th>Akun</th>
-                                <th>Jawab Benar</th>
-                                <th>Jawab Salah</th>
-                                <th>Jawab Kosong</th>
-                                <th>Skor Benar</th>
-                                <th>Skor Salah</th>
-                                <th>Skor Kosong</td>
-                                <th>Total Skor</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {% for item in answer_scores %}
-                                <tr class="{% if item.current_score %}bg-warning{% endif %}">
-                                    <td>{{ forloop.counter0 | add:answer_scores.start_index }}</td>
-                                    <th>{{ item.user__username }}</th>
-                                    <td>{{ item.total_true_answer }}</td>
-                                    <td>{{ item.total_false_answer }}</td>
-                                    <td>{{ item.total_none_answer }}</td>
-
-                                    <td>{{ item.true_answer_score }}</td>
-                                    <td>{{ item.false_answer_score }}</td>
-                                    <td>{{ item.none_answer_score }}</td>
-
-                                    <td>{{ item.total_score }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% endif %}
-            </div>
-        </div>
+                </div>
+            </div> <!-- /.col -->
+        </div> <!-- /.row -->
     </div> <!-- /.container -->
 {% endblock %}
 
 {% block js %}
-    <script type="text/javascript">
+    <script src="{% static 'app-assets/vendors/js/calendar/tui-code-snippet.min.js' %}"></script>
+    <script src="{% static 'app-assets/vendors/js/calendar/tui-dom.js' %}"></script>
+    <script src="{% static 'app-assets/vendors/js/calendar/tui-time-picker.min.js' %}"></script>
+    <script src="{% static 'app-assets/vendors/js/calendar/tui-date-picker.min.js' %}"></script>
+    <script src="{% static 'app-assets/vendors/js/extensions/moment.min.js' %}"></script>
+    <script src="{% static 'app-assets/vendors/js/calendar/chance.min.js' %}"></script>
+    <script src="{% static 'app-assets/vendors/js/calendar/tui-calendar.min.js' %}"></script>
 
+    <script src="{% static 'assets/countdown/jquery.countdown.min.js' %}"></script>
+
+    <script type="text/javascript">
+        'use strict';
+
+        /***
+        * Countdown
+        */
+        var $countdown = $('#countdown');
+        var countdownDateTime = "{{ simulation_due.start_date|date:'Y/m/d H:i:s' }}";
+        var countdownDate = "{{ simulation_due.start_date|date:'Y/m/d' }}";
+
+        $countdown.countdown(countdownDateTime, function(event) {
+            var $this = $(this).html(event.strftime(''
+                + '<div class="bg-white"><span id="day" class="digit d-block font-weight-bold">%D</span> hari</div>'
+                + '<div class="bg-white"><span id="hour" class="digit d-block font-weight-bold">%H</span> jam</div>'
+                + '<div class="bg-white"><span id="minute" class="digit d-block font-weight-bold">%M</span> menit</div>'
+                + '<div class="bg-white"><span id="second" class="digit d-block font-weight-bold">%S</span> detik</div>'));
+        })
+        .on('finish.countdown', function(event) {
+            var simulation_uuid = "{{ simulation.uuid }}";
+            markDone('', simulation_uuid);
+        });
+
+        (function (window, Calendar) {
+            // variables
+            var calendar, resizeThrottled;
+            var useCreationPopup = true;
+            var useDetailPopup = true;
+
+            // default keys and styles of calendar 
+            var themeConfig = {
+                'common.border': '1px solid #DFE3E7',
+                'common.backgroundColor': 'white',
+                'common.holiday.color': '#FF5B5C',
+                'common.saturday.color': '#304156',
+                'common.dayname.color': '#304156',
+                'month.dayname.borderLeft': '1px solid transparent',
+                'month.dayname.fontSize': '1rem',
+                'week.dayGridSchedule.borderRadius': '4px',
+                'week.timegridSchedule.borderRadius': '4px',
+            }
+
+            // calendar initialize here
+            calendar = new Calendar('#calendar', {
+                defaultView: 'month',
+                useCreationPopup: useCreationPopup,
+                useDetailPopup: useDetailPopup,
+                theme: themeConfig,
+                isReadOnly: true,
+            });
+
+            // Events initialize
+            function setEventListener() {
+                $('.menu-navigation').on('click', onClickNavi);
+            }
+
+            function setRenderRangeText() {
+                var renderRange = document.getElementById('renderRange');
+                var options = calendar.getOptions();
+                var viewName = calendar.getViewName();
+                var html = [];
+                if (viewName === 'day') {
+                    html.push(moment(calendar.getDate().getTime()).format('YYYY-MM-DD'));
+                } else if (viewName === 'month' &&
+                    (!options.month.visibleWeeksCount || options.month.visibleWeeksCount > 4)) {
+                    html.push(moment(calendar.getDate().getTime()).format('YYYY-MM'));
+                } else {
+                    html.push(moment(calendar.getDateRangeStart().getTime()).format('YYYY-MM-DD'));
+                    html.push('-');
+                    html.push(moment(calendar.getDateRangeEnd().getTime()).format(' MM.DD'));
+                }
+                renderRange.innerHTML = html.join('');
+            }
+
+            function getDataAction(target) {
+                return target.dataset ? target.dataset.action : target.getAttribute('data-action');
+            }
+
+            // on click of next and previous button view change
+            function onClickNavi(e) {
+                var action = getDataAction(e.target);
+                switch (action) {
+                case 'move-prev':
+                    calendar.prev();
+                    break;
+                case 'move-next':
+                    calendar.next();
+                    break;
+                case 'move-today':
+                    calendar.today();
+                    break;
+                default:
+                    return;
+                }
+                setRenderRangeText();
+                setSchedules();
+            }
+
+            function setSchedules() {
+                calendar.clear();
+
+                var month = moment(calendar.getDate().getTime()).format('MM');
+                var year = moment(calendar.getDate().getTime()).format('YYYY');
+
+                var filter = {}
+                if (month && year) {
+                    filter = {
+                        year: year,
+                        month: month,
+                    }
+                }
+  
+                $.ajax({
+                    method: 'GET',
+                    headers: {'X-CSRFToken': getCookie('csrftoken')},
+                    url: '/api/market/bundles/',
+                    data: { ...filter },
+                    success: function(response) {
+                        var itemList = [];
+
+                        $.each(response, function(index, value) {
+                            var item = {
+                                id: value.id,
+                                calendarId: '1',
+                                title: value.label,
+                                category: 'time',
+                                isAllDay: true,
+                                dueDateClass: '',
+                                start: value.start_date,
+                                end: value.end_date,
+                                bgColor: '#daf19d',
+                            }
+
+                            itemList.push(item);
+                        });
+
+                        calendar.createSchedules(itemList);
+                    }
+                });
+            }
+
+            window.calendar = calendar;
+            setRenderRangeText();
+            setEventListener();
+            setSchedules();
+        })(window, tui.Calendar);
     </script>
 {% endblock %}

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% block head_title %}Bukti {{ bundle.label }}{% endblock %}
+{% block content_title %}
+    Unggah Bukti untuk
+    <a href="{% url 'bundle_detail' bundle.uuid %}" class="font-weight-bolder">{{ bundle.label }}</a>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
+            <input id="fileupload" type="file" name="value_image" class="d-none" accept="image/x-png,image/jpeg,image/jpg">
+
+            {% if bought.status == ACCEPT %}
+                <div class="alert alert-success mb-1">Selamat, Try Out Anda sudah aktif!</div>
+            {% else %}
+                <div class="alert alert-light mb-1">Lengkapi bukti dibawah ini. Admin akan segera mengaktifkan Try Out pilihan Anda.</div>
+            {% endif %}
+
+            {% for item in proof_requirements %}
+                <div id="proof-{{ item.id }}" class="card">
+                    <div class="card-body">
+                        <h5>{{ item.label }}</h5>
+
+                        {% if item.description %}
+                            <p>{{ item.description }}</p>
+                        {% endif %}
+
+                        <div class="mb-2 upload-item">
+                            {% if item.document_image %}
+                                <div class="item-gallery">
+                                    <figure class="d-block">
+                                        <img src="{% get_media_prefix %}{{ item.document_image }}" class="w-auto h-auto">
+                                    </figure>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="upload-tool">
+                            <div id="progress-upload" class="progress d-none">
+                                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+
+                            {% if bought.status != ACCEPT %}
+                                <div class="d-flex">
+                                    <button id="delete-file" data-proof-id="{{ item.id }}" data-uuid="{{ item.document_uuid }}" class="btn btn-danger btn-sm mr-2 {% if not item.document_uuid %}d-none{% endif %}">
+                                        Hapus
+                                    </button>
+
+                                    <button id="select-file" data-proof-requirement-id="{{ item.id }}" class="btn btn-primary btn-sm">
+                                        Pilih File
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'assets/file-upload/js/jquery.iframe-transport.js' %}"></script>
+    <script src="{% static 'assets/file-upload/js/vendor/load-image.all.min.js' %}"></script>
+    <script src="{% static 'assets/file-upload/js/vendor/jquery.ui.widget.js' %}"></script>
+    <script src="{% static 'assets/file-upload/js/jquery.fileupload.js' %}"></script>
+    <script src="{% static 'assets/file-upload/js/jquery.fileupload-process.js' %}"></script>
+    <script src="{% static 'assets/file-upload/js/jquery.fileupload-image.js' %}"></script>
+    <script src="{% static 'assets/file-upload/js/jquery.fileupload-validate.js' %}"></script>
+
+    <script type="text/javascript">
+        // ...
+        // UPLOAD DOCUMENTS
+        // ...
+        var uploadUrl = '/api/market/proofs/';
+
+        $(document).on('click', '#select-file', function(e) {
+            e.preventDefault();
+
+            var proof_requirement_id = $(this).data('proof-requirement-id');
+            $('#fileupload').attr('data-proof-requirement-id', proof_requirement_id).trigger('click');
+        });
+
+        $('#fileupload').fileupload({
+            url: uploadUrl,
+            dataType: 'json',
+            sequentialUploads: true,
+            start: function (e) {
+                var proof_id = $(e.target).attr('data-proof-requirement-id');
+                $('#proof-' + proof_id + ' #progress-upload').removeClass('d-none');
+            },
+            stop: function (e) {
+                var proof_id = $(e.target).attr('data-proof-requirement-id');
+
+                $('#proof-' + proof_id + ' #progress-upload').addClass('d-none');
+                $('#proof-' + proof_id + ' #progress-upload .progress-bar').css({ 'width': '0%' });
+                $('#proof-' + proof_id + ' #progress-upload .progress-bar').text('');
+            },
+            progress: function (e, data) {  /* 4. UPDATE THE PROGRESS BAR */
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                var strProgress = progress + "%";
+                var proof_id = $(e.target).attr('data-proof-requirement-id');
+
+                $('#proof-' + proof_id + ' #progress-upload .progress-bar').css({ 'width': strProgress });
+                $('#proof-' + proof_id + ' #progress-upload .progress-bar').text(strProgress);
+            },
+            done: function (e, data) {
+                var proof_id = $(e.target).attr('data-proof-requirement-id');
+
+                $('#proof-' + proof_id + ' #progress-upload').addClass('d-none');
+                $('#proof-' + proof_id + ' #delete-file').removeClass('d-none').attr('data-uuid', data.result.uuid);
+
+                // clear value
+                $(e.target).val('');
+
+                // build view
+                var preview = `<div class="item-gallery">
+                    <figure class="d-block">
+                        <img src="${data.result.value_image_url}" class="w-auto h-auto">
+                    </figure>
+                </div>`;
+
+                $('#proof-' + proof_id + ' .upload-item').html(preview);
+            }
+        });
+
+        // ...
+        // ADD MORE PARAMS
+        // ...
+        $('#fileupload').bind('fileuploadsubmit', function (e, data) {
+            var proof_requirement_id = $(e.target).attr('data-proof-requirement-id');
+
+            data.formData = {
+                bought_proof: +"{{ bought.bought_proof.id }}",
+                bought_proof_requirement: +proof_requirement_id,
+                csrfmiddlewaretoken: getCookie('csrftoken'),
+            }
+        });
+
+        // ...
+        // DELETE
+        // ...
+        $(document).on('click', '#delete-file', function(e) {
+            e.preventDefault();
+            var uuid = $(this).data('uuid'),
+                proof_id = $(this).data('proof-id');
+
+            $.ajax({
+                method: 'DELETE',
+                url: '/api/market/proofs/' + uuid + '/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                beforeSend: function(xhr) {
+
+                },
+                success: function(response) {
+                    $('#proof-' + proof_id + ' #delete-file').addClass('d-none');
+                    $('#proof-' + proof_id + ' .upload-item').html('');
+                }
+            });
+        });
+    </script>
+{% endblock %}

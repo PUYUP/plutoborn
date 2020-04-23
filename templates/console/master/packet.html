@@ -20,10 +20,11 @@
 
             <div class="card mt-1">
                 <div class="card-content">
-                    <table class="table">
+                    <table class="table-sm-del table">
                         <thead>
                             <tr>
                                 <th>Nama</th>
+                                <th>Kategori</th>
                                 <th colspan="2" class="w-25">Aksi</th>
                             </tr>
                         </thead>
@@ -31,6 +32,7 @@
                         {% for item in packets %}
                             <tr>
                                 <td>{{ item.label }}</td>
+                                <td>{{ item.category.label }}</td>
                                 <td>
                                     <a href="{% url 'dashboard_packet_editor' item.id %}" class="btn btn-sm btn-primary">Edit</a>
                                 </td>

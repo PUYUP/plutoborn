@@ -1,6 +1,8 @@
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+from django.utils.functional import lazy
+from django.utils.safestring import mark_safe
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.contrib.contenttypes.models import ContentType
@@ -12,12 +14,14 @@ from rest_framework.renderers import JSONRenderer
 from utils.generals import get_model
 from apps.person.utils.auth import CurrentUserDefault
 from apps.tryout.api.question.serializers import ChoiceSerializer, QuestionSerializer
-from apps.tryout.utils.constant import LIVE
+from apps.tryout.utils.constant import LIVE, HOLD as PACKET_HOLD
 from apps.payment.utils.constant import IN, OUT
-from apps.market.utils.constant import NATIONAL
+from apps.market.utils.constant import NATIONAL, HOLD as BUNDLE_HOLD
 
 Simulation = get_model('tryout', 'Simulation')
 Points = get_model('mypoints',  'Points')
+
+mark_safe_lazy = lazy(mark_safe, str)
 
 
 class SimulationSerializer(serializers.ModelSerializer):
@@ -119,11 +123,16 @@ class SimulationSerializer(serializers.ModelSerializer):
 
         acquired = validated_data.get('acquired', None)
         user = validated_data.get('user', None)
-        chance = acquired.packet.chance
-        start_date = acquired.packet.start_date
-        end_date = acquired.packet.end_date
-        bundle = acquired.packet.bundle_set.first()
-        classification = acquired.packet.classification
+
+        packet = getattr(acquired, 'packet', None)
+        if not packet:
+            raise NotAcceptable(_("Tidak tersedia."))
+
+        chance = packet.chance
+        start_date = packet.start_date
+        end_date = packet.end_date
+        bundle = packet.bundle_set.first()
+        classification = packet.classification
         simulation_count = Simulation.objects.filter(
             user_id=user.id, acquired_id=acquired.id).count()
 
@@ -133,6 +142,12 @@ class SimulationSerializer(serializers.ModelSerializer):
 
         if bundle.end_date:
             end_date = bundle.end_date
+
+        # check this bundle and acquired active
+        if bundle.status == BUNDLE_HOLD or acquired.status == PACKET_HOLD:
+            bought_proof_url = reverse('bought_proof', kwargs={'bundle_uuid': bundle.uuid})
+            msg = _("Paket GRATIS Anda belum aktif. Silahkan unggah bukti. <br /> <a href='%s' class='btn btn-info pl-2 pr-2 mt-1'>Unggah Bukti Sekarang</a>" % bought_proof_url)
+            raise NotAcceptable(mark_safe_lazy(msg))
 
         # national simulation need program studies
         program_studies = request.data.getlist('program_studies[]', None)

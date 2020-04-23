@@ -593,7 +593,7 @@
       debug: false,
       fallbackLng: "en",
       backend: {
-        loadPath: "https://pluto-tryout.herokuapp.com/static/app-assets/data/locales/{{lng}}.json"
+        loadPath: siteURL + "static/app-assets/data/locales/{{lng}}.json"
       },
       returnObjects: true
     },
@@ -763,7 +763,7 @@
           a = 0
 
         // getting json data from file for search results
-        $.getJSON("https://pluto-tryout.herokuapp.com/static/app-assets/data/" + $filename + ".json", function (
+        $.getJSON(siteURL + "static/app-assets/data/" + $filename + ".json", function (
           data
         ) {
           for (var i = 0; i < data.listItems.length; i++) {

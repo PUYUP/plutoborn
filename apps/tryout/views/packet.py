@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from utils.generals import get_model
 from apps.tryout.utils.constant import SCORE
-from apps.market.utils.constant import NATIONAL
+from apps.market.utils.constant import NATIONAL, HOLD
 from apps.tryout.forms import PasswordProtectForm
 
 Packet = get_model('tryout', 'Packet')
@@ -37,16 +37,20 @@ class PacketDetailView(LoginRequiredMixin, View):
                     chance_total=Count('simulations', distinct=True, filter=Q(simulations__user_id=user.id)),
                     question_total=Count('questions', distinct=True),
                     theory_total=Count('questions__theory', distinct=True),
-                    acquired_id=F('acquireds__id')
+                    acquired_id=F('acquireds__id'),
+                    acquired_status=F('acquireds__status')
                 ).get()
 
             return packet
         except ObjectDoesNotExist:
-            return redirect(reverse('bundle_list'))
+            return None
 
     def get(self, request, packet_uuid=None):
         user = request.user
         packet = self.get_packet(packet_uuid=packet_uuid, user=user)
+
+        if not packet:
+            return redirect(reverse('bundle_list'))
 
         simulations = getattr(packet, 'simulations', None)
         if simulations:
@@ -59,11 +63,17 @@ class PacketDetailView(LoginRequiredMixin, View):
             bundle_password = packet.bundle_set.filter(password__isnull=False, bundle_passwords__isnull=False)
             bundle_password = bundle_password.exists()
 
+        theories = packet.questions \
+            .values('theory', 'theory__label', 'theory__duration') \
+            .annotate(Count('theory', distinct=True), question_total=Count('id'))
+
+        self.context['HOLD'] = HOLD
         self.context['SCORE'] = SCORE
         self.context['NATIONAL'] = NATIONAL
         self.context['packet'] = packet
         self.context['bundle'] = bundle
         self.context['simulations'] = simulations
+        self.context['theories'] = theories
         self.context['form'] = self.form(bundle=bundle, request=request)
         self.context['bundle_password'] = bundle_password
         self.context['program_studies'] = ProgramStudy.objects.all()

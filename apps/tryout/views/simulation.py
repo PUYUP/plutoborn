@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.views import View
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -7,11 +8,14 @@ from django.db.models import (
     F, Q, Subquery, OuterRef, CharField, Sum, FloatField)
 from django.db.models.functions import Cast
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 
 from utils.generals import get_model
+from utils.pagination import Pagination
 from apps.tryout.utils.constant import SCORE, PREFERENCE, TRUE_FALSE_NONE
+
+from pprint import pprint
 
 Packet = get_model('tryout', 'Packet')
 Simulation = get_model('tryout', 'Simulation')
@@ -253,86 +257,151 @@ class SimulationRankingView(LoginRequiredMixin, View):
 
         packet = simulation.packet
         simulation_count = user.simulations.filter(packet_id=packet.id).count()
-        ranking_chance = int(request.session.get('ranking_chance', 1))
+        simulation_change = int(request.session.get('simulation_change', 1))
         ranking_theory = int(request.session.get('ranking_theory', 0))
 
         theories = packet.questions.filter(theory__isnull=False) \
-            .values('theory', 'theory__pk', 'theory__label') \
-            .annotate(total=Count('theory'))
+            .values('theory', 'theory__pk', 'theory__label', 'theory__true_score',
+                    'theory__false_score', 'theory__none_score') \
+            .distinct()
 
-        answer_scores = Answer.objects \
-            .prefetch_related(Prefetch('user'), Prefetch('packet'), Prefetch('simulation'), Prefetch('question')) \
-            .select_related('user', 'packet', 'simulation', 'qustion') \
-            .filter(packet_id=packet.id, simulation__chance=ranking_chance) \
-            .values('user') \
+        theories_params = dict()
+        theories_total_score = list()
+        theories_filtered = theories
+
+        if ranking_theory:
+            theories_filtered = theories.filter(theory__id=ranking_theory)
+
+        for item in theories_filtered:
+            theory_id = item['theory__pk']
+
+            at = 'theory_{}_true_count'.format(theory_id)
+            af = 'theory_{}_false_count'.format(theory_id)
+            an = 'theory_{}_none_count'.format(theory_id)
+
+            at_s = 'theory_{}_true_score'.format(theory_id)
+            af_s = 'theory_{}_false_score'.format(theory_id)
+            an_s = 'theory_{}_none_score'.format(theory_id)
+
+            ts = 'theory_{}_total_score'.format(theory_id)
+            tn = 'theory_{}_verbose_name'.format(theory_id)
+
+            # verbose name
+            theories_params[tn] = Value(item['theory__label'], output_field=CharField())
+
+            # count right choice
+            theories_params[at] = Sum(
+                Case(
+                    When(
+                        Q(answers__question__theory__id=theory_id)
+                        & Q(answers__choice__isnull=False)
+                        & Q(answers__choice__right_choice=True),
+                        then=Value(1)
+                    ),
+                    output_field=IntegerField(),
+                    default=Value(0)
+                )
+            )
+            theories_params[at_s] = F(at) * item['theory__true_score']
+
+            # count false choice
+            theories_params[af] = Sum(
+                Case(
+                    When(
+                        Q(answers__question__theory__id=theory_id)
+                        & Q(answers__choice__isnull=False)
+                        & Q(answers__choice__right_choice=False),
+                        then=Value(1)
+                    ),
+                    output_field=IntegerField(),
+                    default=Value(0)
+                )
+            )
+            theories_params[af_s] = F(af) * item['theory__false_score']
+
+            # count none choice
+            theories_params[an] = Sum(
+                Case(
+                    When(
+                        Q(answers__question__theory__id=theory_id)
+                        & Q(answers__choice__isnull=True),
+                        then=Value(1)
+                    ),
+                    output_field=IntegerField(),
+                    default=Value(0)
+                )
+            )
+            theories_params[an_s] = F(an) * item['theory__none_score']
+
+            # sum all theory score
+            theories_params[ts] = (F(at) * item['theory__true_score']) \
+                + (F(an) * item['theory__none_score']) \
+                - (F(af) * item['theory__false_score'])
+
+            # prepare total score
+            theories_total_score.append(F(ts))
+
+        simulations = packet.simulations \
+            .filter(chance=simulation_change) \
             .annotate(
+                **theories_params,
+                total_score=sum(theories_total_score),
                 current_score=Case(
                     When(user_id=user.id, then=True),
                     default=False,
                     output_field=BooleanField()
                 ),
-                total_true_answer=Sum(
-                    Case(
-                        When(Q(choice__isnull=False) & Q(right_choice=True), then=Value(1)),
-                        output_field=IntegerField(),
-                        default=Value(0)
-                    )
-                ),
-                total_false_answer=Sum(
-                    Case(
-                        When(Q(choice__isnull=False) & Q(right_choice=False), then=Value(1)),
-                        output_field=IntegerField(),
-                        default=Value(0)
-                    )
-                ),
-                total_none_answer=Sum(
-                    Case(
-                        When(choice__isnull=True, then=Value(1)),
-                        output_field=IntegerField(),
-                        default=Value(0)
-                    )
-                ),
-                true_answer_score=Sum(
-                    Case(
-                        When(Q(choice__isnull=False) & Q(right_choice=True), then=F('question__theory__true_score')),
-                        output_field=IntegerField(),
-                        default=Value(0)
-                    )
-                ),
-                false_answer_score=Sum(
-                    Case(
-                        When(Q(choice__isnull=False) & Q(right_choice=False), then=F('question__theory__false_score')),
-                        output_field=IntegerField(),
-                        default=Value(0)
-                    )
-                ),
-                none_answer_score=Sum(
-                    Case(
-                        When(choice__isnull=True, then=F('question__theory__none_score')),
-                        output_field=IntegerField(),
-                        default=Value(0)
-                    )
-                ),
-                total_score=F('true_answer_score') + F('none_answer_score') - F('false_answer_score')) \
-            .values('user', 'user__username', 'current_score', 'true_answer_score', 'false_answer_score', 'none_answer_score', 'total_score', 'total_true_answer', 'total_false_answer', 'total_none_answer') \
-            .order_by('-total_score')
+            ).order_by('-total_score')
 
-        # theory filter
-        if ranking_theory > 0:
-            answer_scores = answer_scores.filter(question__theory__id=ranking_theory)
+        theory_ids = [item['theory__pk'] for item in theories_filtered]
+        for item in simulations:
+            tgs = list()
+            for tid in theory_ids:
+                tn = 'theory_{}_verbose_name'.format(tid)
+                ts = 'theory_{}_total_score'.format(tid)
+                at_s = 'theory_{}_true_score'.format(tid)
+                af_s = 'theory_{}_false_score'.format(tid)
+                an_s = 'theory_{}_none_score'.format(tid)
+
+                label = getattr(item, tn, None)
+                true_score = getattr(item, at_s, 0)
+                false_score = getattr(item, af_s, 0)
+                none_score = getattr(item, an_s, 0)
+                total_score = getattr(item, ts, 0)
+
+                tg = {
+                    'label': label,
+                    'true_score': true_score,
+                    'false_score': false_score,
+                    'none_score': none_score,
+                    'total_score': total_score,
+                }
+                tgs.append(tg)
+            item.theory_groups = tgs
 
         # paginator
-        page = request.GET.get('page', 1)
-        paginate = Paginator(answer_scores, 10)
-        answer_scores = paginate.get_page(page)
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(simulations, settings.PAGINATION_PER_PAGE)
 
+        try:
+            simulations_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            simulations_pagination = paginator.page(1)
+        except EmptyPage:
+            simulations_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, simulations, simulations_pagination, page_num, paginator)
+
+        self.context['pagination'] = pagination
         self.context['simulation'] = simulation
+        self.context['simulations'] = simulations
+        self.context['simulations_pagination'] = simulations_pagination
         self.context['simulation_count'] = simulation_count
         self.context['packet'] = packet
-        self.context['answer_scores'] = answer_scores
-        self.context['ranking_chance'] = ranking_chance
+        self.context['simulation_change'] = simulation_change
         self.context['ranking_theory'] = ranking_theory
         self.context['theories'] = theories
+        self.context['theories_filtered'] = theories_filtered
         return render(request, self.template_name, self.context)
 
     def post(self, request, simulation_uuid=None):
@@ -340,6 +409,6 @@ class SimulationRankingView(LoginRequiredMixin, View):
         theory = request.POST.get('theory', 1)
 
         # save temporary filter
-        request.session['ranking_chance'] = chance
+        request.session['simulation_change'] = chance
         request.session['ranking_theory'] = theory
         return redirect(reverse('simulation_ranking', kwargs={'simulation_uuid': simulation_uuid}))

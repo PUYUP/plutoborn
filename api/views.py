@@ -29,6 +29,10 @@ class RootApiView(APIView):
                                    format=format, current_app='market'),
                 'voucher-redeems': reverse('market:voucher_redeem-list', request=request,
                                            format=format, current_app='market'),
+                'bundles': reverse('market:bundle-list', request=request,
+                                   format=format, current_app='market'),
+                'proofs': reverse('market:proof-list', request=request,
+                                  format=format, current_app='market'),
             },
             'tryout': {
                 'simulations': reverse('tryout:simulation-list', request=request,
@@ -37,6 +41,8 @@ class RootApiView(APIView):
                                    format=format, current_app='tryout'),
                 'questions': reverse('tryout:question-list', request=request,
                                      format=format, current_app='tryout'),
+                'attachments': reverse('tryout:attachment-list', request=request,
+                                       format=format, current_app='tryout'),
             },
             'mypoints': {
                 'points': reverse('mypoints:points-list', request=request,

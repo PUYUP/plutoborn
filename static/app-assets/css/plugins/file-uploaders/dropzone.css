@@ -44,7 +44,7 @@
 }
 
 .dropzone .dz-preview .dz-error-mark, .dropzone .dz-preview .dz-success-mark {
-  background-image: url("https://pluto-tryout.herokuapp.com/images/dropzone/spritemap.png");
+  background-image: url("../../../static/images/dropzone/spritemap.png");
 }
 
 .dropzone .dz-preview .dz-error-message {

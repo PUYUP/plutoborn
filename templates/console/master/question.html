@@ -3,14 +3,27 @@
 {% load crispy_forms_tags %}
 
 {% block head_title %}Pertanyaan{% endblock %}
-{% block content_title %}Pertanyaan untuk <u>{{ packet.label }}</u>{% endblock %}
+{% block content_title %}Pertanyaan untuk <u><a href="{% url 'dashboard_question' packet.id %}">{{ packet.label }}</a></u>{% endblock %}
 
 {% block content %}
     <div class="row">
-        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
-            <a href="{% url 'dashboard_question_editor' packet.id %}" class="btn btn-success">Tambah</a>
-            <a href="{% url 'dashboard_question_reorder' packet.id %}" class="btn btn-warning ml-1">Reset Nomor</a>
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-8 col-12">
+            <div class="row">
+                <div class="col-6 col-sm-4 col-md-3 mb-2">
+                    <a href="{% url 'dashboard_question_editor' packet.id %}" class="btn btn-success h-100 d-flex align-items-center justify-content-center">Tambah</a>
+                </div>
 
+                {% for item in packet.theories.all %}
+                    <div class="col-6 col-sm-4 col-md-3 mb-2">
+                        <a href="{% url 'dashboard_theory_question_editor' packet.id item.id %}" class="btn {% if theory_id == item.id %}btn-dark{% else %}btn-success{% endif %} h-100 d-flex align-items-center justify-content-center">Tambah di {{ item.label }}</a>
+                    </div>
+                {% endfor %}
+
+                <div class="col-6 col-sm-4 col-md-3 mb-2">
+                    <a href="{% url 'dashboard_question_reorder' packet.id %}" class="btn btn-warning h-100 d-flex align-items-center justify-content-center">Reset Nomor</a>
+                </div>
+            </div>
+        
             {% if messages %}
                 <ul class="messages list-unstyled mt-2 mb-2">
                     {% for message in messages %}
@@ -21,7 +34,7 @@
 
             <div class="card mt-1">
                 <div class="card-content">
-                    <table class="table">
+                    <table class="table-sm-del table">
                         <thead>
                             <tr>
                                 <th>Nomor</th>
@@ -35,7 +48,15 @@
                             <tr>
                                 <td>{{ item.numbering }}</td>
                                 <td>{{ item.label }}</td>
-                                <td>{{ item.theory.label }}</td>
+                                <td>
+                                    {% if item.theory %}
+                                        <a href="{% url 'dashboard_theory_question' item.packet.id item.theory.id %}">
+                                            {{ item.theory.label }}
+                                        </a>
+                                    {% else %}
+                                        &mdash;
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <a href="{% url 'dashboard_question_editor' item.packet.id item.id %}" class="btn btn-sm btn-primary">Edit</a>
                                 </td>

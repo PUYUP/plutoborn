@@ -23,3 +23,11 @@ SIMULATION_TYPE = (
     (GENERAL, _("Umum")),
     (NATIONAL, _("Nasional")),
 )
+
+
+ACCEPT = 'accept'
+HOLD = 'hold'
+BOUGHT_STATUS = (
+    (ACCEPT, _("Accept")),
+    (HOLD, _("Hold"))
+)

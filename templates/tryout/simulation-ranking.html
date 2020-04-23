@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load static humanize %}
+{% load static humanize listing %}
 {% load mathfilters %}
-{% block head_title %}Peringkat{% endblock %}
+{% block head_title %}Peringkat {{ packet.label|safe }}{% endblock %}
 {% block content_title %}<span class="text-dark text-uppercase font-weight-bolder">Rangkuman Peringkat</span>: {{ packet.label|safe }}{% endblock %}
 
 {% block content %}
@@ -12,19 +12,19 @@
                     {% csrf_token %}
 
                     <div class="row mb-2">
-                        <div class="col-2 col-sm-2 col-md-2">
-                            <div class="form-group">
+                        <div class="col-4 col-sm-4 col-md-3 col-lg-2">
+                            <div class="form-group mb-0">
                                 <label for="chance">Simulai Ke?</label>
                                 <select name="chance" class="form-control w-100 rounded-0">
                                     {% for i in "x"|rjust:simulation_count %}
-                                        <option value="{{ forloop.counter }}" {% if forloop.counter == ranking_chance %}selected{% endif %}>{{ forloop.counter }}</option>
+                                        <option value="{{ forloop.counter }}" {% if forloop.counter == simulation_change %}selected{% endif %}>{{ forloop.counter }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div> <!-- /.col -->
 
-                        <div class="col-8 col-sm-8 col-md-4">
-                            <div class="form-group">
+                        <div class="col-8 col-sm-8 col-md-5 col-lg-4">
+                            <div class="form-group mb-0">
                                 <label for="chance">Materi</label>
                                 <select name="theory" class="form-control w-100 rounded-0">
                                     <option value="0">Semua Materi</option>
@@ -35,46 +35,63 @@
                             </div>
                         </div>
 
-                        <div class="col-2 col-sm-2 col-md-2">
+                        <div class="col-12 col-sm-12 col-md-3 col-lg-2">
                             <label for="chance">&nbsp;</label>
                             <button type="submit" class="btn btn-warning btn-block rounded-0">Saring</button>
                         </div> <!-- /.col -->
                     </div>
                 </form>
 
-                <table class="table table-striped text-center">
-                    <thead>
-                        <tr class="bg-light font-weight-bold">
-                            <th>Ranking</th>
-                            <th>Akun</th>
-                            <th>Jawab Benar</th>
-                            <th>Jawab Salah</th>
-                            <th>Jawab Kosong</th>
-                            <th>Skor Benar</th>
-                            <th>Skor Salah</th>
-                            <th>Skor Kosong</td>
-                            <th>Total Skor</th>
+                <div class="table-responsive">
+                    <table class="table-sm table table-bordered table-striped mb-0" style="font-size:13px;">
+                        <col>
+                        <colgroup span="2"></colgroup>
+                        <colgroup span="2"></colgroup>
+                        <tr class="bg-light text-white">
+                            <th rowspan="3" class="align-middle text-center" style="border-left: 1px solid #A3AFBD; border-top: 1px solid #A3AFBD;">Ranking</th>
+                            <th rowspan="3" class="align-middle text-center" style="border-top: 1px solid #A3AFBD;">Akun</th>
+                            <th colspan="{% widthratio theories_filtered.count 1 3 %}" scope="colgroup" class="text-center" style="border-top: 1px solid #A3AFBD;">Materi</th>
+            
+                            <th rowspan="2" class="align-middle text-center" scope="colgroup" style="border-right: 1px solid #A3AFBD; border-top: 1px solid #A3AFBD;">Total Nilai</th>
                         </tr>
-                    </thead>
+                        <tr class="bg-light text-white">
+                            {% for item in theories_filtered %}
+                                <th scope="col" colspan="3" scope="colgroup" class="align-middle text-center" style="width:150px;">{{ item.theory__label }}</th>
+                            {% endfor %}
+                        </tr>
 
-                    <tbody>
-                        {% for item in answer_scores %}
-                            <tr class="{% if item.current_score %}bg-warning{% endif %}">
-                                <td>{{ forloop.counter0 | add:answer_scores.start_index }}</td>
-                                <th>{{ item.user__username }}</th>
-                                <td>{{ item.total_true_answer }}</td>
-                                <td>{{ item.total_false_answer }}</td>
-                                <td>{{ item.total_none_answer }}</td>
+                        <tr class="text-center bg-light text-white">
+                            {% for theory in theories_filtered %}
+                                <th>B</th>
+                                <th>S</th>
+                                <th>K</th>
+                            {% endfor %}
 
-                                <td>{{ item.true_answer_score }}</td>
-                                <td>{{ item.false_answer_score }}</td>
-                                <td>{{ item.none_answer_score }}</td>
+                            <th>B - S + K</th>
+                        </tr>
 
-                                <td>{{ item.total_score }}</td>
+                        {% for item in simulations_pagination %}
+                            <tr class="{% if item.current_score %}bg-secondary text-white font-weight-bold{% endif %}">
+                                <th scope="row" class="text-center">{{ forloop.counter0 | add:simulations_pagination.start_index }}</th>
+                                <td>{{ item.user.username }}</td>
+
+                                {% for theory in item.theory_groups %}
+                                    <td class="text-center">{{ theory.true_score }}</td>
+                                    <td class="text-center">{{ theory.false_score }}</td>
+                                    <td class="text-center">{{ theory.none_score }}</td>
+                                {% endfor %}
+
+                                <td class="text-center">{{ item.total_score }}</td>
                             </tr>
                         {% endfor %}
-                    </tbody>
-                </table>
+                    </table>
+                </div>
+            
+                {% if simulations_pagination.has_other_pages %}
+                    <div class="d-block w-100 mt-2">
+                        {% pagination pagination %}
+                    </div>
+                {% endif %}
             </div>
         </div>
     </section>

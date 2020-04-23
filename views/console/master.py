@@ -8,7 +8,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q, Sum, Prefetch
+from django.contrib.contenttypes.models import ContentType
 
 from utils.generals import get_model
 from apps.payment.utils.constant import SETTLEMENT, CAPTURE, PENDING, EXPIRED
@@ -16,13 +17,12 @@ from apps.payment.utils.general import money_to_coin
 from utils.midtransclient.error_midtrans import MidtransAPIError
 
 from views.console.forms import (
-    TheoryForm, PacketForm, QuestionForm, ChoiceFormSetFactory,
-    BundleForm)
+    TheoryForm, PacketForm, QuestionForm, ChoiceFormSetFactory, CategoryForm)
 
+Category = get_model('tryout', 'Category')
 Theory = get_model('tryout', 'Theory')
 Packet = get_model('tryout', 'Packet')
 Question = get_model('tryout', 'Question')
-Bundle = get_model('market', 'Bundle')
 TopUp = get_model('payment', 'TopUp')
 
 SNAP = settings.SNAP
@@ -108,6 +108,85 @@ class TheoryDeleteView(LoginRequiredMixin, View):
 
 
 # ==========================================
+# CATEGORY
+# ==========================================
+class CategoryView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    template_name = 'console/master/category.html'
+    context = dict()
+
+    def get(self, request):
+        categories = Category.objects.all()
+        self.context['categories'] = categories
+        return render(request, self.template_name, self.context)
+
+
+class CategoryEditorView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    template_name = 'console/master/category-editor.html'
+    context = dict()
+    form = CategoryForm
+
+    def get(self, request, pk=None):
+        try:
+            queryset = Category.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            queryset = None
+
+        self.context['form'] = self.form(instance=queryset)
+        self.context['queryset'] = queryset
+        self.context['messages'] = messages.get_messages(request)
+        return render(request, self.template_name, self.context)
+
+    def post(self, request, pk=None):
+        try:
+            queryset = Category.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            queryset = None
+
+        form = self.form(request.POST)
+        if queryset:
+            form = self.form(request.POST, instance=queryset)
+
+        if form.is_valid():
+            fm = form.save(commit=False)
+            fm.save()
+            form.save_m2m()
+
+            if queryset:
+                msg = _("Kategori %s berhasil diperbarui." % fm.label)
+            else:
+                msg = _("Kategori %s berhasil dibuat." % fm.label)
+            messages.add_message(request, messages.INFO, msg)
+
+            return redirect(reverse('dashboard_category'))
+
+        self.context['form'] = form
+        return render(request, self.template_name, self.context)
+
+
+class CategoryDeleteView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    def get(self, request, pk=None):
+        try:
+            queryset = Category.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            queryset = None
+
+        if queryset:
+            queryset.delete()
+            msg = _("Kategory %s berhasil dihapus." % (queryset.label))
+            messages.add_message(request, messages.WARNING, msg)
+        return redirect(reverse('dashboard_category'))
+
+
+# ==========================================
 # PACKET
 # ==========================================
 class PacketView(LoginRequiredMixin, View):
@@ -118,7 +197,11 @@ class PacketView(LoginRequiredMixin, View):
     context = dict()
 
     def get(self, request):
-        packets = Packet.objects.all()
+        packets = Packet.objects \
+            .prefetch_related(Prefetch('category'), Prefetch('theories')) \
+            .select_related('category') \
+            .all()
+
         self.context['packets'] = packets
         return render(request, self.template_name, self.context)
 
@@ -196,14 +279,17 @@ class QuestionView(LoginRequiredMixin, View):
     template_name = 'console/master/question.html'
     context = dict()
 
-    def get(self, request, packet_id=None, pk=None):
+    def get(self, request, packet_id=None, theory_id=None, pk=None):
         try:
             packet = Packet.objects.get(id=packet_id)
         except ObjectDoesNotExist:
             return redirect(reverse('dashboard_packet'))
 
         questions = Question.objects.filter(packet_id=packet_id).order_by('numbering')
+        if theory_id:
+            questions = questions.filter(theory_id=theory_id)
 
+        self.context['theory_id'] = theory_id
         self.context['packet'] = packet
         self.context['questions'] = questions
         return render(request, self.template_name, self.context)
@@ -216,7 +302,7 @@ class QuestionReorderView(LoginRequiredMixin, View):
     template_name = 'console/master/question.html'
     context = dict()
 
-    def get(self, request, packet_id=None, pk=None):
+    def get(self, request, packet_id=None, theory_id=None, pk=None):
         try:
             packet = Packet.objects.get(id=packet_id)
         except ObjectDoesNotExist:
@@ -252,7 +338,7 @@ class QuestionEditorView(LoginRequiredMixin, View):
     form = QuestionForm
     formset = ChoiceFormSetFactory
 
-    def get(self, request, packet_id=None, pk=None):
+    def get(self, request, packet_id=None, theory_id=None, pk=None):
         try:
             packet = Packet.objects.get(id=packet_id)
         except ObjectDoesNotExist:
@@ -263,15 +349,22 @@ class QuestionEditorView(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             queryset = None
 
+        question_form = self.form(instance=queryset)
+        if theory_id:
+            question_form = self.form(instance=queryset, initial={'theory': theory_id})
+
         identifiers = ['A', 'B', 'C', 'D', 'E']
-        self.context['form'] = self.form(instance=queryset)
+        question_ct = ContentType.objects.get(app_label="tryout", model="question")
+
+        self.context['form'] = question_form
         self.context['formset'] = self.formset(instance=queryset, initial=[{'identifier': x} for x in identifiers])
         self.context['queryset'] = queryset
         self.context['packet'] = packet
         self.context['messages'] = messages.get_messages(request)
+        self.context['question_ct'] = question_ct
         return render(request, self.template_name, self.context)
 
-    def post(self, request, packet_id=None, pk=None):
+    def post(self, request, packet_id=None, theory_id=None, pk=None):
         try:
             packet = Packet.objects.get(id=packet_id)
         except ObjectDoesNotExist:
@@ -304,7 +397,7 @@ class QuestionEditorView(LoginRequiredMixin, View):
                 msg = _("Pertanyaan %s berhasil dibuat." % fm.label)
             messages.add_message(request, messages.INFO, msg)
 
-            return redirect(reverse('dashboard_question', kwargs={'packet_id': packet_id}))
+            return redirect(reverse('dashboard_theory_question', kwargs={'packet_id': packet_id, 'theory_id': fm.theory.id}))
 
         self.context['form'] = form
         self.context['formset'] = formset
@@ -329,84 +422,6 @@ class QuestionDeleteView(LoginRequiredMixin, View):
         return redirect(reverse('dashboard_question', kwargs={'packet_id': packet_id}))
 
 
-# ==========================================
-# BUNDLE
-# ==========================================
-class BundleView(LoginRequiredMixin, View):
-    login_url = '/login/'
-    redirect_field_name = 'redirect_to'
-
-    template_name = 'console/master/bundle.html'
-    context = dict()
-
-    def get(self, request):
-        bundles = Bundle.objects.all()
-        self.context['bundles'] = bundles
-        return render(request, self.template_name, self.context)
-
-
-class BundleEditorView(LoginRequiredMixin, View):
-    login_url = '/login/'
-    redirect_field_name = 'redirect_to'
-
-    template_name = 'console/master/bundle-editor.html'
-    context = dict()
-    form = BundleForm
-
-    def get(self, request, pk=None):
-        try:
-            queryset = Bundle.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            queryset = None
-
-        self.context['form'] = self.form(instance=queryset)
-        self.context['queryset'] = queryset
-        self.context['messages'] = messages.get_messages(request)
-        return render(request, self.template_name, self.context)
-
-    def post(self, request, pk=None):
-        try:
-            queryset = Bundle.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            queryset = None
-
-        form = self.form(request.POST)
-        if queryset:
-            form = self.form(request.POST, instance=queryset)
-
-        if form.is_valid():
-            fm = form.save(commit=False)
-            fm.save()
-            form.save_m2m()
-
-            if queryset:
-                msg = _("Bundel %s berhasil diperbarui." % fm.label)
-            else:
-                msg = _("Bundel %s berhasil dibuat." % fm.label)
-            messages.add_message(request, messages.INFO, msg)
-
-            return redirect(reverse('dashboard_bundle'))
-
-        self.context['form'] = form
-        return render(request, self.template_name, self.context)
-
-
-class BundleDeleteView(LoginRequiredMixin, View):
-    login_url = '/login/'
-    redirect_field_name = 'redirect_to'
-
-    def get(self, request, pk=None):
-        try:
-            queryset = Bundle.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            queryset = None
-
-        if queryset:
-            queryset.delete()
-            msg = _("Bundel %s berhasil dihapus." % (queryset.label))
-            messages.add_message(request, messages.WARNING, msg)
-        return redirect(reverse('dashboard_bundle'))
-
 
 # ==========================================
 # TOPUP
@@ -419,7 +434,10 @@ class TopUpView(LoginRequiredMixin, View):
     context = dict()
 
     def get(self, request):
-        topups = TopUp.objects.all().order_by('-date_created')
+        topups = TopUp.objects \
+            .prefetch_related(Prefetch('user')) \
+            .select_related('user') \
+            .order_by('-date_created')
         self.context['topups'] = topups
         return render(request, self.template_name, self.context)
 

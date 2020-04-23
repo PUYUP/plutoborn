@@ -3,10 +3,13 @@ from django.urls import path
 from apps.market.views.bundle import BundleListView, BundleDetailView
 from apps.market.views.voucher import VoucherRedeemListView
 from apps.market.views.affiliate import AffiliateView, AffiliateCaptureView
+from apps.market.views.proof import BoughtProofView
 
 urlpatterns = [
     path('bundle/', BundleListView.as_view(), name='bundle_list'),
+    path('bundle/enrolled/', BundleListView.as_view(), name='bundle_list_enrolled'),
     path('bundle/<uuid:bundle_uuid>/', BundleDetailView.as_view(), name='bundle_detail'),
+    path('bundle/<uuid:bundle_uuid>/proof/', BoughtProofView.as_view(), name='bought_proof'),
 
     path('voucher/', VoucherRedeemListView.as_view(), name='voucher_redeem_list'),
     path('affiliate/', AffiliateView.as_view(), name='affiliate'),

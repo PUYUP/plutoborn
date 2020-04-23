@@ -46,3 +46,11 @@ SCORING_TYPE = (
     (TRUE_FALSE_NONE, _("Benar, Salah, Kosong")),
     (PREFERENCE, _("Menurut Pilihan")),
 )
+
+
+HOLD = 'hold'
+ACTIVE = 'active'
+ACQUIRED_STATUS = (
+    (HOLD, _("Menunggu")),
+    (ACTIVE, _("Aktif")),
+)

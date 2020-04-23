@@ -4,11 +4,11 @@
 
 {% block content_title %}
     <div class="row">
-        <div class="col-12 col-sm-12 col-md-12 col-lg-10 col-xl-8">
+        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
             <div class="d-flex w-100 align-items-center">
                 {{ bundle.label }}
 
-                {% if not bundle.is_boughted %}
+                {% if not is_boughted %}
                     <button type="button" class="btn btn-sm btn-info ml-auto text-uppercase mt-auto"
                         data-toggle="modal" data-target="#buyBundle" data-id="{{ bundle.id }}"
                         data-coin="{{ bundle.coin_amount }}" data-backdrop="static">
@@ -16,7 +16,11 @@
                         Beli Sekarang
                     </button>
                 {% else %}
-                    <span class="ml-auto text-success text-uppercase font-weight-bold">Sudah Dibeli</span>
+                    {% if not is_accept %}
+                        <a href="{% url 'bought_proof' bundle.uuid %}" class="btn btn-primary btn-sm pl-2 pr-2 ml-auto">Unggah Bukti</a>
+                    {% else %}
+                        <span class="ml-auto text-success text-uppercase font-weight-bold">Sudah Dibeli</span>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -31,9 +35,20 @@
         </div>
     {% else %}
         <div class="row">
-            <div class="col-12 col-sm-12 col-md-12 col-lg-10 col-xl-8">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
                 <div class="card">
-                    <table class="table table-borderless">
+                    <table class="table-sm-del table table-borderless">
+                        <tr>
+                            <td class="w-25">Status</td>
+                            <td class="font-weight-bold">
+                                {% if not is_accept %}
+                                    <span class="badge badge-danger">Belum Aktif</span>
+                                {% else %}
+                                    <span class="badge badge-success">Aktif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+    
                         <tr>
                             <td class="w-25">Nama</td>
                             <td class="font-weight-bold">{{ bundle.label|safe }}</td>
@@ -41,7 +56,13 @@
 
                         <tr>
                             <td>Harga</td>
-                            <td class="font-weight-bold">{{ bundle.coin_amount|intcomma|safe }} Koin</td>
+                            <td class="font-weight-bold">
+                                {% if bundle.coin_amount %}
+                                    {{ bundle.coin_amount|intcomma|safe }} Koin
+                                {% else %}
+                                    Gratis
+                                {% endif %}
+                            </td>
                         </tr>
 
                         <tr>
@@ -52,6 +73,16 @@
                         <tr>
                             <td>Jenis</td>
                             <td class="font-weight-bold">{{ bundle.get_simulation_type_display }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>Tanggal Dibuka</td>
+                            <td class="font-weight-bold">{{ bundle.start_date|date:'d-m-Y H:i' }}</td>
+                        </tr>
+
+                        <tr>
+                            <td>Tanggal Ditutup</td>
+                            <td class="font-weight-bold">{{ bundle.end_date|date:'d-m-Y H:i' }}</td>
                         </tr>
 
                         <tr>
@@ -86,7 +117,10 @@
                 {% for item in packets %}
                     <div class="card">
                         <div class="card-body pb-0">
-                            <h5 class="mb-1">Detil Paket: {{ item.label }}</h5>
+                            <div class="d-flex w-100 mb-1">
+                                <h5 class="mb-0">Detil Paket: {{ item.label }}</h5>
+                                <a href="{% url 'packet_detail' item.uuid %}" class="btn btn-warning btn-sm pl-2 pr-2 ml-auto text-uppercase">Kerjakan</a>
+                            </div>
 
                             <div class="row">
                                 {% for theory in item.theory %}
@@ -116,7 +150,7 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <table class="table table-borderless"> 
+                        <table class="table-sm-del table table-borderless"> 
                             <tr>
                                 <td class="pl-0">Harga</td>
                                 <td class="pr-0 font-weight-bold text-right"><span id="coin-amount"></span> koin</td>

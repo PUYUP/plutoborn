@@ -22,6 +22,7 @@
 {% block content %}
     <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-10 col-xl-8 col-12">
+            <div id="id_descriptionx"></div>
             <div class="card">
                 <div class="card-body">
                     <form action="{% if queryset %}{% url 'dashboard_question_editor' packet.id queryset.id %}{% else %}{% url 'dashboard_question_editor' packet.id %}{% endif %}" method="POST">
@@ -38,18 +39,22 @@
 
                         {% for form in formset %}
                             <div class="choice-item pt-2 pr-2 pl-2">
-                                <div class="row">
+                                <div class="row align-items-center">
                                     {% for field in form %}
                                         {% if field.name == 'identifier' %}
-                                            <div class="col-3 col-sm-2 order-1">
+                                            <div class="col-6 col-sm-2 order-2">
                                                 {{ field|as_crispy_field }}
                                             </div>
                                         {% elif field.name == 'score' %}
-                                            <div class="col-3 col-sm-2 order-2">
+                                            <div class="col-6 col-sm-2 order-3">
                                                 {{ field|as_crispy_field }}
                                             </div>
                                         {% elif field.name == 'label' %}
-                                            <div class="col-6 col-sm-8 order-3">
+                                            <div class="col-12 order-4">
+                                                {{ field|as_crispy_field}}
+                                            </div>
+                                        {% elif field.name == 'right_choice' %}
+                                            <div class="col-12 col-sm-4 col-md-3 order-1">
                                                 {{ field|as_crispy_field}}
                                             </div>
                                         {% else %}
@@ -80,6 +85,7 @@
 {% block js %}
     <script src="{% static 'app-assets/vendors/js/pickers/daterange/moment.min.js' %}"></script>
     <script src="{% static 'app-assets/vendors/js/pickers/daterange/daterangepicker.js' %}"></script>
+    <script src="{% static 'assets/ckeditor/ckeditor.js' %}"></script>
 
     <script type="text/javascript">
         // Date & Time
@@ -92,6 +98,64 @@
             locale: {
                 format: 'YYYY-MM-DD HH:mm:ss'
             }
+        });
+
+        var editorList = ['id_description', 'id_explanation'];
+        $.each(editorList, function(index, value) {
+            ClassicEditor
+                .create( document.querySelector( '#' + value ), {
+                    toolbar: [
+                        'bold', 'italic', 'bulletedList', 'numberedList', 'blockQuote',
+                        'imageUpload', 'mediaEmbed', '|', 'MathType', 'ChemType'
+                    ],
+                    simpleUpload: {
+                        // The URL that the images are uploaded to.
+                        uploadUrl: '/api/tryout/attachments/',
+
+                        // Headers sent along with the XMLHttpRequest to the upload server.
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+
+                        // More data
+                        params: {
+                            'content_type': "{{ question_ct.id }}",
+                        }
+                    }
+                } )
+                .catch( error => {
+                    console.log( error );
+                } );
+        });
+
+        var choicesEditor = $('.choice-item').find('textarea');
+        $.each(choicesEditor, function(index, value) {
+            var elId = $(value).attr('id');
+            
+            ClassicEditor
+                .create( document.querySelector( '#' + elId ), {
+                    toolbar: [
+                        'bold', 'italic', 'bulletedList', 'numberedList', 'blockQuote',
+                        'imageUpload', 'mediaEmbed', '|', 'MathType', 'ChemType'
+                    ],
+                    simpleUpload: {
+                        // The URL that the images are uploaded to.
+                        uploadUrl: '/api/tryout/attachments/',
+
+                        // Headers sent along with the XMLHttpRequest to the upload server.
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+
+                        // More data
+                        params: {
+                            'content_type': "{{ question_ct.id }}",
+                        }
+                    }
+                } )
+                .catch( error => {
+                    console.log( error );
+                } );
         });
     </script>
 {% endblock %}

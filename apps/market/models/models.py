@@ -87,3 +87,30 @@ if not is_model_registered('market', 'AffiliateCapture'):
             db_table = 'market_affiliate_capture'
 
     __all__.append('AffiliateCapture')
+
+
+# 9
+if not is_model_registered('market', 'BoughtProofRequirement'):
+    class BoughtProofRequirement(AbstractBoughtProofRequirement):
+        class Meta(AbstractBoughtProofRequirement.Meta):
+            db_table = 'market_bought_proof_requirement'
+
+    __all__.append('BoughtProofRequirement')
+
+
+# 10
+if not is_model_registered('market', 'BoughtProof'):
+    class BoughtProof(AbstractBoughtProof):
+        class Meta(AbstractBoughtProof.Meta):
+            db_table = 'market_bought_proof'
+
+    __all__.append('BoughtProof')
+
+
+# 11
+if not is_model_registered('market', 'BoughtProofDocument'):
+    class BoughtProofDocument(AbstractBoughtProofDocument):
+        class Meta(AbstractBoughtProofDocument.Meta):
+            db_table = 'market_bought_proof_document'
+
+    __all__.append('BoughtProofDocument')

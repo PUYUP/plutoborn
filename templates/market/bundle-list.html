@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-{% load humanize %}
-{% block head_title %}Try Out{% endblock %}
-{% block content_title %}Try Out{% endblock %}
+{% load humanize listing %}
+{% block head_title %}Paket Try Out{% endblock %}
+{% block content_title %}Paket Try Out{% endblock %}
 
 {% block content %}
     {% if user.profile.is_empty%}
@@ -10,148 +10,171 @@
             <a href="{% url 'profile' %}" class="btn btn-dark mt-1">Lengkapi Profil</a>
         </div>
     {% else %}
-        <h6>Paket Aktif</h6>
-        {% if not packets.exists %}
-            <p class="text-muted">Anda belum membeli paket apapun.</p>
-        {% endif %}
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link {% if not slug %}active{% endif %}" href="{% url 'bundle_list' %}">Paket Tersedia</a>
+            </li>
 
-        <div class="row">
-            {% for item in packets %}
-                <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-3 mb-3">
-                    <div class="card bundle h-100 mb-0">
-                        <div class="card-body d-flex w-100 flex-column">
-                            <h5 class="card-title">
-                                <a href="{% url 'packet_detail' item.packet.uuid %}">{{ item.packet.label|safe }}</a>
-                            </h5>
+            <li class="nav-item">
+                <a class="nav-link {% if slug == 'enrolled' %}active{% endif %}" href="{% url 'bundle_list_enrolled' %}">Paket Saya</a>
+            </li>
+        </ul>
 
-                            <div class="d-block pb-1 meta">
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Jumlah soal</span>
-                                    <span>{{ item.question_total|intcomma|safe }} Soal</span>
-                                </p>
+        {% if slug == 'enrolled' %}
+            {% if not queryset.exists %}
+                <p class="text-muted">Anda belum membeli paket apapun.</p>
+            {% endif %}
 
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Jumlah materi</span>
-                                    <span>{{ item.theory_total|intcomma|safe }} Materi</span>
-                                </p>
+            <div class="row">
+                {% for item in queryset_pagination %}
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-3 mb-3">
+                        <div class="card bundle h-100 mb-0">
+                            <div class="card-body d-flex w-100 flex-column">
+                                <h5 class="card-title">
+                                    <a href="{% url 'packet_detail' item.packet.uuid %}">{{ item.packet.label|safe }}</a>
+                                </h5>
 
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Jenis</span>
-                                    <span>{{ item.packet.get_classification_display }}</span>
-                                </p>
+                                <div class="d-block pb-1 meta">
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Jumlah soal</span>
+                                        <span>{{ item.question_total|intcomma|safe }} Soal</span>
+                                    </p>
 
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Tipe Simulasi</span>
-                                    <span>{{ item.x_simulation_type }}</span>
-                                </p>
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Jumlah materi</span>
+                                        <span>{{ item.theory_total|intcomma|safe }} Materi</span>
+                                    </p>
 
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Dimulai pada</span>
-                                    <span>{{ item.x_start_date|date:'d-m-Y H:i' }}</span>
-                                </p>
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Jenis</span>
+                                        <span>{{ item.packet.get_classification_display }}</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Tipe Simulasi</span>
+                                        <span>{{ item.x_simulation_type }}</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Dimulai pada</span>
+                                        <span>{{ item.x_start_date|date:'d-m-Y H:i' }}</span>
+                                    </p>
+                                </div>
+
+                                <a href="{% url 'packet_detail' item.packet.uuid %}" class="btn btn-primary btn-sm text-uppercase mt-auto">
+                                    <i class="bx bx-notepad"></i>
+                                    Lihat
+                                </a>
                             </div>
-
-                            <a href="{% url 'packet_detail' item.packet.uuid %}" class="btn btn-primary btn-sm text-uppercase mt-auto">
-                                <i class="bx bx-notepad"></i>
-                                Lihat
-                            </a>
                         </div>
-                    </div>
-                </div> <!-- /.col -->
-            {% endfor %}
-        </div> <!-- /.row -->
-
-        <hr />
-        
-        <h6>Beli Paket</h6>
-        {% if not bundles.exists %}
-            <p class="text-danger">Semua paket sudah Anda beli.</p>
+                    </div> <!-- /.col -->
+                {% endfor %}
+            </div> <!-- /.row -->
         {% endif %}
 
-        <div class="row">
-            {% for item in bundles %}
-                <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-3 mb-3">
-                    <div class="card bundle h-100 mb-0">
-                        <div class="card-body d-flex w-100 flex-column">
-                            <h5 class="card-title">
-                                <a href="{% url 'bundle_detail' item.uuid %}">{{ item.label|safe }}</a>
-                            </h5>
+        {% if not slug %}
+            {% if not queryset.exists %}
+                <p class="text-danger">Semua paket sudah Anda beli.</p>
+            {% endif %}
 
-                            <div class="meta d-block pb-1">
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Harga</span>
-                                    <span>{{ item.coin_amount|intcomma|safe }} Koin</span>
-                                </p>
+            <div class="row">
+                {% for item in queryset_pagination %}
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xl-3 mb-3">
+                        <div class="card bundle h-100 mb-0">
+                            <div class="card-body d-flex w-100 flex-column">
+                                <h5 class="card-title">
+                                    <a href="{% url 'bundle_detail' item.uuid %}">{{ item.label|safe }}</a>
+                                </h5>
 
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Isi Bundel</span>
-                                    <span>{{ item.total_packet|intcomma|safe }} Paket</span>
-                                </p>
+                                <div class="meta d-block pb-1">
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Harga</span>
+                                        <span>
+                                            {% if item.coin_amount %}
+                                                {{ item.coin_amount|intcomma|safe }} Koin
+                                            {% else %}
+                                                Gratis
+                                            {% endif %}
+                                        </span>
+                                    </p>
 
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Tipe Simulasi</span>
-                                    <span>{{ item.get_simulation_type_display }}</span>
-                                </p>
-                                
-                                <p class="card-text d-flex w-100">
-                                    <span class="mr-auto">Dimulai pada</span>
-                                    <span>
-                                        {% if item.start_date %}
-                                            {{ item.start_date|date:'d-m-Y H:i' }}
-                                        {% else %}
-                                            Kapan saja
-                                        {% endif %}
-                                    </span>
-                                </p>
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Isi Bundel</span>
+                                        <span>{{ item.total_packet|intcomma|safe }} Paket</span>
+                                    </p>
+
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Tipe Simulasi</span>
+                                        <span>{{ item.get_simulation_type_display }}</span>
+                                    </p>
+                                    
+                                    <p class="card-text d-flex w-100">
+                                        <span class="mr-auto">Dimulai pada</span>
+                                        <span>
+                                            {% if item.start_date %}
+                                                {{ item.start_date|date:'d-m-Y H:i' }}
+                                            {% else %}
+                                                Kapan saja
+                                            {% endif %}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <button type="button" class="btn btn-info btn-sm text-uppercase mt-auto"
+                                    data-toggle="modal" data-target="#buyBundle" data-id="{{ item.id }}"
+                                    data-coin="{{ item.coin_amount }}" data-backdrop="static"
+                                    data-url="{% url 'bundle_detail' item.uuid %}">
+                                    <i class="bx bx-cart"></i>
+                                    Beli
+                                </button>
                             </div>
+                        </div>
+                    </div> <!-- /.col -->
+                {% endfor %}
+            </div> <!-- /.row -->
 
-                            <button type="button" class="btn btn-info btn-sm text-uppercase mt-auto"
-                                data-toggle="modal" data-target="#buyBundle" data-id="{{ item.id }}"
-                                data-coin="{{ item.coin_amount }}" data-backdrop="static">
-                                <i class="bx bx-cart"></i>
-                                Beli
+            <!-- Modal -->
+            <div class="modal fade" id="buyBundle" tabindex="-1" role="dialog" aria-labelledby="buyBundleTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="buyBundleTitle">Beli Paket</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                    </div>
-                </div> <!-- /.col -->
-            {% endfor %}
-        </div> <!-- /.row -->
+                        <div class="modal-body">
+                            <table class="table-sm-del table table-borderless"> 
+                                <tr>
+                                    <td class="pl-0">Harga</td>
+                                    <td class="pr-0 font-weight-bold text-right"><span id="coin-amount"></span> koin</td>
+                                </tr>
 
-        <!-- Modal -->
-        <div class="modal fade" id="buyBundle" tabindex="-1" role="dialog" aria-labelledby="buyBundleTitle" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="buyBundleTitle">Beli Paket</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <table class="table table-borderless"> 
-                            <tr>
-                                <td class="pl-0">Harga</td>
-                                <td class="pr-0 font-weight-bold text-right"><span id="coin-amount"></span> koin</td>
-                            </tr>
+                                <tr>
+                                    <td class="pl-0">Koin Saya</td>
+                                    <td class="pr-0 font-weight-bold text-right">{{ coin_amounts.total_active|intcomma|safe }} koin</td>
+                                </tr>
 
-                            <tr>
-                                <td class="pl-0">Koin Saya</td>
-                                <td class="pr-0 font-weight-bold text-right">{{ coin_amounts.total_active|intcomma|safe }} koin</td>
-                            </tr>
+                                <tr>
+                                    <td class="pl-0">Informasi</td>
+                                    <td class="pr-0 font-weight-bold text-right"><span id="allow-buy"></span></td>
+                                </tr>
+                            </table>
 
-                            <tr>
-                                <td class="pl-0">Informasi</td>
-                                <td class="pr-0 font-weight-bold text-right"><span id="allow-buy"></span></td>
-                            </tr>
-                        </table>
-
-                        <div class="text-right">
-                            <button type="button" id="buy-action" class="btn btn-info">OK. Beli Paket Ini</button>
+                            <div class="text-right">
+                                <button type="button" id="buy-action" class="btn btn-info">OK. Beli Paket Ini</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
+
+        {% if queryset_pagination.has_other_pages %}
+            <div class="d-block w-100">
+                {% pagination pagination %}
+            </div>
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -184,6 +207,7 @@
          */
         $('#buyBundle').on('show.bs.modal', function(e) {
             var id = $(e.relatedTarget).data('id'),
+                url = $(e.relatedTarget).data('url'),
                 coin = +$(e.relatedTarget).data('coin'),
                 coin_left = current_coin - coin,
                 passed = current_coin >= coin ? true : false,
@@ -191,7 +215,7 @@
             
             $(e.currentTarget).find('#coin-amount').html(coin);
             $(e.currentTarget).find('#allow-buy').html(message);
-            $(e.currentTarget).find('#buy-action').attr('data-id', id).attr('data-coin', coin);
+            $(e.currentTarget).find('#buy-action').attr('data-id', id).attr('data-coin', coin).attr('data-url', url);
 
             if (!passed) $('#buy-action').attr('disabled', true).hide();
         });
@@ -204,6 +228,7 @@
             event.preventDefault();
 
             var $this = $(this),
+                url = $this.data('url'),
                 bundle_id = +$this.data('id');
 
             $.ajax({
@@ -227,7 +252,11 @@
                         allowEscapeKey: false,
                     });
 
-                    window.location.reload();
+                    if (url) {
+                        window.location.href = url;
+                    } else {
+                        window.location.reload();
+                    }
                 },
                 error: function(error) {
                     $this.removeAttr('disabled');

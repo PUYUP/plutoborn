@@ -11,6 +11,7 @@ from apps.person.utils.auth import CurrentUserDefault
 from apps.payment.utils.constant import IN
 
 Bought = get_model('market', 'Bought')
+BoughtProofDocument = get_model('market', 'BoughtProofDocument')
 AffiliateAcquired = get_model('market', 'AffiliateAcquired')
 AffiliateCommission = get_model('market', 'AffiliateCommission')
 
@@ -49,7 +50,7 @@ class BoughtSerializer(serializers.ModelSerializer):
         if affiliate_acquired:
             affiliator = affiliate_acquired.affiliate.user
             amount = coin_need * 0.2
-            description = _("Komisi pembelian Bundle %s oleh %s" % (bundle.label, user.username))
+            description = _("Komisi pembelian Bundel %s oleh %s" % (bundle.label, user.username))
             caused_content_type = ContentType.objects \
                 .get_for_model(bundle, for_concrete_model=False)
     
@@ -60,3 +61,44 @@ class BoughtSerializer(serializers.ModelSerializer):
 
         obj, _created = Bought.objects.get_or_create(**validated_data)
         return obj
+
+
+class BoughtProofDocumentSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=CurrentUserDefault())
+    value_image_url = serializers.SerializerMethodField(read_only=True)
+    value_file_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = BoughtProofDocument
+        fields = '__all__'
+        extra_kwargs = {
+            'user': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        try:
+            request = self.context['request']
+        except KeyError:
+            raise NotAcceptable()
+        
+        value_image = validated_data.pop('value_image')
+
+        defaults = {
+            'value_image': value_image,
+        }
+        obj, _created = BoughtProofDocument.objects.update_or_create(**validated_data, defaults=defaults)
+        return obj
+
+    def get_value_image_url(self, obj):
+        request = self.context['request']
+
+        if obj.value_image:
+            return request.build_absolute_uri(obj.value_image.url)
+        return None
+
+    def get_value_file_url(self, obj):
+        request = self.context['request']
+
+        if obj.value_file:
+            return request.build_absolute_uri(obj.value_file.url)
+        return None

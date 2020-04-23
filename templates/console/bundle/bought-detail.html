@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}Detail Pembelian {{ bought.bundle.label }}{% endblock %}
+{% block content_title %}Detail Pembelian {{ bought.bundle.label }}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+            {% if messages %}
+                <ul class="messages list-unstyled mt-2 mb-2">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }} mb-0"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-content">
+                    <table class="table-sm-del table mb-0">
+                        <tr>
+                            <td class="w-25">Bundel</td>
+                            <td>{{ bought.bundle.label }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="w-25">Pembeli</td>
+                            <td>{{ bought.user.username }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="w-25">Harga</td>
+                            <td>{{ bought.bundle.coin_amount|intcomma }} Koin</td>
+                        </tr>
+
+                        <tr>
+                            <td class="w-25">Tanggal</td>
+                            <td>{{ bought.date_created|date:'d-m-Y H:i' }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="w-25">Status</td>
+                            <td>{{ bought.get_status_display }}</td>
+                        </tr>
+
+                        {% if not bought.bundle.coin_amount or bought.bundle.coin_amount == 0 %}
+                            {% if not bought.bought_proof.bought_proof_documents.all.exists %}
+                                <tr>
+                                    <td colspan="2">Belum mengunggah bukti.</td>
+                                </tr>
+                            {% else %}
+                                {% for item in bought.bought_proof.bought_proof_documents.all %}
+                                    <tr>
+                                        <td class="w-25">{{ item.bought_proof_requirement.label }}</td>
+                                        <td>
+                                            {% if item.value_image %}
+                                                <img src="{{ item.value_image.url }}">
+                                            {% else %}
+                                                Belum ada bukti
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+
+                        {% if bought.status == HOLD %}
+                            <tr>
+                                <td class="w-25">Tindakan</td>
+                                <td>
+                                    <p class="mb-1">Tindakan ini tidak bisa dibatalkan.</p>
+                                    <a href="{% url 'dashboard_bought_accept' bought.id %}" class="btn btn-warning pl-2 pr-2">Setujui</a>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </table>
+                </div> <!-- /.card content -->
+            </div> <!-- /.card -->
+        </div> <!-- /.col -->
+    </div> <!-- /.row -->
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

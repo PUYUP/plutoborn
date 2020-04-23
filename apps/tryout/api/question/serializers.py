@@ -45,6 +45,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     next_uuid = serializers.SerializerMethodField(read_only=True)
     choices = ChoiceSerializer(many=True, read_only=True)
     scoring_type = serializers.CharField(read_only=True, source='theory.scoring_type')
+    theory_label = serializers.CharField(source='theory.label')
 
     class Meta:
         model = Question

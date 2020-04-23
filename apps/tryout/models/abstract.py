@@ -2,16 +2,58 @@ import uuid
 import datetime
 
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.core.files import File
+from django.core.files.storage import FileSystemStorage
 
+from utils.generals import FileSystemStorageExtend
 from apps.tryout.utils.constant import (
     CLASSIFICATION, RIGHT_CHOICE, EDUCATION_LEVEL, PACKET_STATUS, DRAFT, ALL, SCORE,
-    SCORING_TYPE, TRUE_FALSE_NONE)
+    SCORING_TYPE, TRUE_FALSE_NONE, HOLD, ACQUIRED_STATUS)
+
+
+def directory_image_path(instance, filename):
+    fs = FileSystemStorageExtend()
+    year = datetime.date.today().year
+    month = datetime.date.today().month
+    filename = fs.generate_filename(filename, instance=instance)
+
+    # Will be 'files/2019/10/filename.jpg
+    return 'images/{0}/{1}/{2}'.format(year, month, filename)
+
+
+def directory_file_path(instance, filename):
+    fs = FileSystemStorageExtend()
+    year = datetime.date.today().year
+    month = datetime.date.today().month
+    filename = fs.generate_filename(filename, instance=instance)
+
+    # Will be 'files/2019/10/filename.jpg
+    return 'files/{0}/{1}/{2}'.format(year, month, filename)
 
 
 # Create your models here.
+class AbstractCategory(models.Model):
+    label = models.CharField(max_length=255, verbose_name=_("Nama"), help_text=_("Contoh: Try Out UTBK"))
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+    date_updated = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        abstract = True
+        app_label = 'tryout'
+        verbose_name = _('Kategori')
+        verbose_name_plural = _('Kategori')
+
+    def __str__(self):
+        return self.label
+
+
 class AbstractTheory(models.Model):
     parent = models.ForeignKey(
         'self',
@@ -31,6 +73,7 @@ class AbstractTheory(models.Model):
     true_score = models.IntegerField(null=True)
     false_score = models.IntegerField(null=True)
     none_score = models.IntegerField(null=True)
+    minimum_score = models.IntegerField(null=True, blank=True)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     duration = models.IntegerField(blank=False, null=True, help_text=_("Durasi dalam menit."))
@@ -50,6 +93,8 @@ class AbstractPacket(models.Model):
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     date_updated = models.DateTimeField(auto_now=True, null=True)
 
+    category = models.ForeignKey('tryout.Category', on_delete=models.SET_NULL, null=True)
+    theories = models.ManyToManyField('tryout.Theory', related_name='packets', verbose_name=_("Materi"))
     label = models.CharField(max_length=255, verbose_name=_("Nama Paket"))
     description = models.TextField(blank=True, verbose_name=_("Keterangan"))
     start_date = models.DateTimeField(blank=True, null=True, verbose_name=_("Tanggal dan Jam Mulai"))
@@ -109,6 +154,7 @@ class AbstractQuestion(models.Model):
     label = models.CharField(max_length=500, verbose_name=_("Judul Pertanyaan"))
     score = models.IntegerField(blank=True, null=True, verbose_name=_("Skor"))
     description = models.TextField(blank=True, verbose_name=_("Keterangan Tambahan"))
+    explanation = models.TextField(blank=True, null=True, verbose_name=_("Pembahasan"))
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     date_updated = models.DateTimeField(auto_now=True, null=True)
 
@@ -152,11 +198,11 @@ class AbstractChoice(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     identifier = models.CharField(max_length=1, verbose_name=_("Pilihan"))
-    label = models.CharField(max_length=500, verbose_name=_("Jawaban"))
+    label = models.TextField(verbose_name=_("Jawaban"))
     score = models.IntegerField(blank=True, null=True, verbose_name=_("Skor"))
     description = models.TextField(blank=True, verbose_name=_("Keterangan"))
-    explanation = models.TextField(blank=True, verbose_name=_("Penjelasan Jawaban"))
-    right_choice = models.BooleanField(default=False, verbose_name=_("Ini Jawaban Benar"))
+    explanation = models.TextField(blank=True, verbose_name=_("Pembahasan"))
+    right_choice = models.BooleanField(default=False, verbose_name=_("Jawaban Benar"))
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     date_updated = models.DateTimeField(auto_now=True, null=True)
 
@@ -235,6 +281,8 @@ class AbstractAcquired(models.Model):
         on_delete=models.CASCADE,
         related_name='acquireds')
 
+    status = models.CharField(choices=ACQUIRED_STATUS, default=HOLD, null=True,
+                              max_length=255)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     date_updated = models.DateTimeField(auto_now=True, null=True)
@@ -248,3 +296,47 @@ class AbstractAcquired(models.Model):
 
     def __str__(self):
         return self.packet.label
+
+
+class AbstractAttachment(models.Model):
+    uploader = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        null=True, related_name='attachments')
+
+    value_image = models.ImageField(
+        upload_to=directory_image_path,
+        max_length=500, null=True, blank=True)
+    value_file = models.FileField(
+        upload_to=directory_file_path,
+        max_length=500, null=True, blank=True)
+    identifier = models.CharField(max_length=255, null=True, blank=True)
+    caption = models.TextField(max_length=500, null=True, blank=True)
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+    date_updated = models.DateTimeField(auto_now=True, null=True)
+
+    # Generic relations
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE,
+        related_name='tryout_attachment',
+        limit_choices_to=Q(app_label='tryout'), blank=True, null=True)
+    object_id = models.PositiveIntegerField(blank=True, null=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        abstract = True
+        app_label = 'tryout'
+        ordering = ['-date_updated']
+        verbose_name = _('Attachment')
+        verbose_name_plural = _('Attachments')
+
+    def __str__(self):
+        value = ''
+        if self.value_image:
+            value = self.value_image.url
+
+        if self.value_file:
+            value = self.value_file.url
+        return value

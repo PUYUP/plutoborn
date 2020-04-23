@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.views import View
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -5,9 +6,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import (
     Count, Prefetch, Case, When, Value, BooleanField, F, DateTimeField, CharField, Q)
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from utils.generals import get_model
-from apps.market.utils.constant import PUBLISHED, GENERAL, NATIONAL
+from utils.pagination import Pagination
+from apps.market.utils.constant import PUBLISHED, GENERAL, NATIONAL, ACCEPT
 
 Bundle = get_model('market', 'Bundle')
 Question = get_model('tryout', 'Question')
@@ -23,37 +26,57 @@ class BundleListView(LoginRequiredMixin, View):
     def get(self, request):
         user = request.user
         coin_amounts = user.account.coin_amounts
+        slug = None
 
-        packets = user.acquireds \
-            .prefetch_related(Prefetch('packet'), Prefetch('user')) \
-            .select_related('packet', 'user') \
-            .annotate(
-                question_total=Count('packet__questions', distinct=True),
-                theory_total=Count('packet__questions__theory', distinct=True),
-                x_start_date=Case(
-                    When(packet__bundle__start_date__isnull=False, then=F('packet__bundle__start_date')),
-                    default=F('packet__start_date'),
-                    ouput_field=DateTimeField()
-                ),
-                x_end_date=Case(
-                    When(packet__bundle__end_date__isnull=False, then=F('packet__bundle__end_date')),
-                    default=F('packet__end_date'),
-                    ouput_field=DateTimeField()
-                ),
-                x_simulation_type=Case(
-                    When(packet__bundle__simulation_type=NATIONAL, then=Value('Nasional')),
-                    default=Value('Umum'),
-                    output_field=CharField()
-                )
-            )
+        if 'enrolled' in request.path:
+            slug = 'enrolled'
 
-        bundles = Bundle.objects \
-            .annotate(total_packet=Count('packet', distinct=True)) \
-            .filter(status=PUBLISHED) \
-            .exclude(boughts__user_id=user.id)
+            queryset = user.acquireds \
+                .prefetch_related(Prefetch('packet'), Prefetch('user')) \
+                .select_related('packet', 'user') \
+                .annotate(
+                    question_total=Count('packet__questions', distinct=True),
+                    theory_total=Count('packet__questions__theory', distinct=True),
+                    x_start_date=Case(
+                        When(packet__bundle__start_date__isnull=False, then=F('packet__bundle__start_date')),
+                        default=F('packet__start_date'),
+                        ouput_field=DateTimeField()
+                    ),
+                    x_end_date=Case(
+                        When(packet__bundle__end_date__isnull=False, then=F('packet__bundle__end_date')),
+                        default=F('packet__end_date'),
+                        ouput_field=DateTimeField()
+                    ),
+                    x_simulation_type=Case(
+                        When(packet__bundle__simulation_type=NATIONAL, then=Value('Nasional')),
+                        default=Value('Umum'),
+                        output_field=CharField()
+                    )
+                ).order_by('-date_created')
+        else:
+            queryset = Bundle.objects \
+                .prefetch_related(Prefetch('packet')) \
+                .annotate(total_packet=Count('packet', distinct=True)) \
+                .filter(status=PUBLISHED) \
+                .exclude(boughts__user_id=user.id) \
+                .order_by('-date_created')
 
-        self.context['packets'] = packets
-        self.context['bundles'] = bundles
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(queryset, settings.PAGINATION_PER_PAGE)
+
+        try:
+            queryset_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            queryset_pagination = paginator.page(1)
+        except EmptyPage:
+            queryset_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, queryset, queryset_pagination, page_num, paginator)
+
+        self.context['slug'] = slug
+        self.context['queryset'] = queryset
+        self.context['queryset_pagination'] = queryset_pagination
+        self.context['pagination'] = pagination
         self.context['coin_amounts'] = coin_amounts
         return render(request, self.template_name, self.context)
 
@@ -93,6 +116,11 @@ class BundleDetailView(LoginRequiredMixin, View):
                 .annotate(question_total=Count('theory__questions', distinct=True, filter=Q(theory__questions__packet_id=x.id)))
             x.theory = theory
 
+        is_boughted = bundle.boughts.filter(user_id=user.id).exists()
+        is_accept = bundle.boughts.filter(user_id=user.id, status=ACCEPT).exists()
+
+        self.context['is_boughted'] = is_boughted
+        self.context['is_accept'] = is_accept
         self.context['bundle'] = bundle
         self.context['packets'] = packets
         self.context['coin_amounts'] = coin_amounts

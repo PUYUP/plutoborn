@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from apps.market.utils.constant import (
-    BUNDLE_STATUS, PUBLISHED, SIMULATION_TYPE, GENERAL)
+    BUNDLE_STATUS, PUBLISHED, SIMULATION_TYPE, GENERAL, HOLD, ACCEPT, BOUGHT_STATUS)
 
 User = get_user_model()
 
@@ -33,6 +33,7 @@ class AbstractBundle(models.Model):
     class Meta:
         abstract = True
         app_label = 'market'
+        ordering = ['-date_created']
         verbose_name = _("Bundel")
         verbose_name_plural = _("Bundel")
 
@@ -41,30 +42,6 @@ class AbstractBundle(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
-
-class AbstractBought(models.Model):
-    user = models.ForeignKey(
-        'auth.User',
-        on_delete=models.CASCADE,
-        related_name='boughts')
-    bundle = models.ForeignKey(
-        'market.Bundle',
-        on_delete=models.CASCADE,
-        related_name='boughts')
-
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
-    date_created = models.DateTimeField(auto_now_add=True, null=True)
-    date_updated = models.DateTimeField(auto_now=True, null=True)
-
-    class Meta:
-        abstract = True
-        app_label = 'market'
-        verbose_name = _("Dibeli")
-        verbose_name_plural = _("Dibeli")
-
-    def __str__(self):
-        return self.bundle.label
 
 
 class AbstractBundlePasswordPassed(models.Model):
@@ -90,3 +67,107 @@ class AbstractBundlePasswordPassed(models.Model):
 
     def __str__(self):
         return self.bundle.label
+
+
+class AbstractBought(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE,
+                             related_name='boughts')
+    bundle = models.ForeignKey('market.Bundle', on_delete=models.CASCADE,
+                               related_name='boughts')
+
+    status = models.CharField(max_length=255, choices=BOUGHT_STATUS, default=ACCEPT, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+    date_updated = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        abstract = True
+        app_label = 'market'
+        ordering = ['-date_created']
+        verbose_name = _("Dibeli")
+        verbose_name_plural = _("Dibeli")
+
+    def __str__(self):
+        return self.bundle.label
+
+    def save(self, *args, **kwargs):
+        if not self.pk and self.bundle.coin_amount == 0:
+            self.status = HOLD
+
+        super().save(*args, **kwargs)
+
+
+class AbstractBoughtProofRequirement(models.Model):
+    label = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=1)
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+    date_updated = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        abstract = True
+        app_label = 'market'
+        unique_together = ('label',)
+        verbose_name = _("Bought Proof Requirement")
+        verbose_name_plural = _("Bought Proof Requirements")
+
+    def __str__(self):
+        return self.label
+
+
+class AbstractBoughtProof(models.Model):
+    bought = models.OneToOneField(
+        'market.Bought', on_delete=models.CASCADE, related_name='bought_proof')
+    user = models.ForeignKey(
+        'auth.User', on_delete=models.CASCADE, related_name='bought_proofs')
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+    date_updated = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        abstract = True
+        app_label = 'market'
+        unique_together = ('bought',)
+        verbose_name = _("Bought Proof")
+        verbose_name_plural = _("Bought Proofs")
+
+    def __str__(self):
+        return self.bought.bundle.label
+
+
+class AbstractBoughtProofDocument(models.Model):
+    _UPLOAD_TO_IMG = 'images/proof'
+    _UPLOAD_TO_FILE = 'files/proof'
+
+    user = models.ForeignKey(
+        'auth.User', on_delete=models.CASCADE, related_name='bought_proof_documents')
+    bought_proof = models.ForeignKey(
+        'market.BoughtProof', on_delete=models.CASCADE, related_name='bought_proof_documents')
+    bought_proof_requirement = models.ForeignKey(
+        'market.BoughtProofRequirement', on_delete=models.SET_NULL, null=True,
+        related_name='bought_proof_documents')
+
+    value_image = models.ImageField(upload_to=_UPLOAD_TO_IMG, max_length=500, blank=True)
+    value_file = models.FileField(upload_to=_UPLOAD_TO_FILE, max_length=500, blank=True)
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+    date_updated = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        abstract = True
+        app_label = 'market'
+        verbose_name = _("Bought Proof Document")
+        verbose_name_plural = _("Bought Proof Documents")
+
+    def __str__(self):
+        return self.bought_proof.bought.bundle.label
+
+    def save(self, *args, **kwargs):
+        if self.bought_proof:
+            self.user = self.bought_proof.user
+
+        super().save(*args, **kwargs)

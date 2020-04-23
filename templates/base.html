@@ -122,6 +122,13 @@
                         </a>
                     </li>
 
+                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_category_editor' or request.resolver_match.url_name == 'dashboard_category' %}active{% endif %}">
+                        <a href="{% url 'dashboard_category' %}">
+                            <i class="menu-livicon" data-icon="notebook"></i>
+                            <span class="menu-title" data-i18n="Materi">Kategori</span>
+                        </a>
+                    </li>
+
                     <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_theory_editor' or request.resolver_match.url_name == 'dashboard_theory' %}active{% endif %}">
                         <a href="{% url 'dashboard_theory' %}">
                             <i class="menu-livicon" data-icon="box-add"></i>
@@ -129,14 +136,14 @@
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_question_editor' or request.resolver_match.url_name == 'dashboard_question' or request.resolver_match.url_name == 'dashboard_packet_editor' or request.resolver_match.url_name == 'dashboard_packet' %}active{% endif %}">
+                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_theory_question' or request.resolver_match.url_name == 'dashboard_theory_question_editor' or request.resolver_match.url_name == 'dashboard_question_editor' or request.resolver_match.url_name == 'dashboard_question' or request.resolver_match.url_name == 'dashboard_packet_editor' or request.resolver_match.url_name == 'dashboard_packet' %}active{% endif %}">
                         <a href="{% url 'dashboard_packet' %}">
                             <i class="menu-livicon" data-icon="grid"></i>
                             <span class="menu-title" data-i18n="Paket">Paket</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_bundle_editor' or request.resolver_match.url_name == 'dashboard_bundle' %}active{% endif %}">
+                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_bought_detail' or request.resolver_match.url_name == 'dashboard_bought' or request.resolver_match.url_name == 'dashboard_bundle_editor' or request.resolver_match.url_name == 'dashboard_bundle' %}active{% endif %}">
                         <a href="{% url 'dashboard_bundle' %}">
                             <i class="menu-livicon" data-icon="diagram"></i>
                             <span class="menu-title" data-i18n="Bundel">Bundel</span>
@@ -158,7 +165,7 @@
                     </li>
 
                     <li class="nav-item
-                        {% if request.resolver_match.url_name == 'simulation_ranking' or request.resolver_match.url_name == 'bundle_list' or request.resolver_match.url_name == 'bundle_detail' or request.resolver_match.url_name == 'packet_detail' or request.resolver_match.url_name == 'simulation_detail' or request.resolver_match.url_name == 'simulation_result' %}active{% endif %}">
+                        {% if request.resolver_match.url_name == 'bought_proof' or request.resolver_match.url_name == 'simulation_ranking' or request.resolver_match.url_name == 'bundle_list_enrolled' or request.resolver_match.url_name == 'bundle_list' or request.resolver_match.url_name == 'bundle_detail' or request.resolver_match.url_name == 'packet_detail' or request.resolver_match.url_name == 'simulation_detail' or request.resolver_match.url_name == 'simulation_result' %}active{% endif %}">
                         <a href="{% url 'bundle_list' %}">
                             <i class="menu-livicon" data-icon="bulb"></i>
                             <span class="menu-title" data-i18n="Try Out">Try Out</span>
@@ -218,12 +225,37 @@
     </div>
     <!-- END: Content-->
 
+    <!-- BEGIN: Global Variable -->
+    <script type="text/javascript">
+        var siteURL = "{{ request.scheme }}://{{ request.get_host }}/";
+
+        /***
+         * Cookies
+         */
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    <!-- END: Global Variable -->
+
     <!-- BEGIN: Vendor JS-->
     <script src="{% static 'app-assets/vendors/js/vendors.min.js' %}"></script>
     <script src="{% static 'app-assets/fonts/LivIconsEvo/js/LivIconsEvo.tools.js' %}"></script>
     <script src="{% static 'app-assets/fonts/LivIconsEvo/js/LivIconsEvo.defaults.js' %}"></script>
     <script src="{% static 'app-assets/fonts/LivIconsEvo/js/LivIconsEvo.min.js' %}"></script>
-    <!-- BEGIN Vendor JS-->
+    <!-- END: Vendor JS-->
 
     <!-- BEGIN: Page Vendor JS-->
     <script src="{% static 'app-assets/vendors/js/charts/apexcharts.min.js' %}"></script>

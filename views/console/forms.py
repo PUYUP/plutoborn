@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from utils.generals import get_model
 from apps.tryout.utils.constant import PREFERENCE
 
+Category = get_model('tryout', 'Category')
 Theory = get_model('tryout', 'Theory')
 Packet = get_model('tryout', 'Packet')
 Question = get_model('tryout', 'Question')
@@ -13,11 +14,18 @@ Choice = get_model('tryout', 'Choice')
 Bundle = get_model('market', 'Bundle')
 
 
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = '__all__'
+        exclude = ('start_date', 'end_date',)
+
+
 class TheoryForm(forms.ModelForm):
     class Meta:
         model = Theory
         fields = '__all__'
-        exclude = ('start_date', 'end_date', 'parent',)
+        exclude = ('start_date', 'end_date',)
         widgets = {
             'description': forms.Textarea(attrs={'rows':3}),
         }
@@ -30,6 +38,7 @@ class PacketForm(forms.ModelForm):
         exclude = ('start_date', 'end_date', 'duration',)
         widgets = {
             'description': forms.Textarea(attrs={'rows':3}),
+            'theories': forms.CheckboxSelectMultiple(),
         }
 
 
@@ -50,7 +59,9 @@ class ChoiceForm(forms.ModelForm):
     class Meta:
         model = Choice
         fields = '__all__'
+        exclude = ('description', 'explanation',)
         widgets = {
+            'label': forms.Textarea(attrs={'rows':3}),
             'description': forms.Textarea(attrs={'rows':3}),
             'explanation': forms.Textarea(attrs={'rows':3}),
         }

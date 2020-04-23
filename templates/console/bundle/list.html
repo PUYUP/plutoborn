@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static listing %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}Bundel Dijual{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+    <ul class="nav nav-pills">
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_bundle' %}active{% endif %}" href="{% url 'dashboard_bundle' %}">Bundel Dijual</a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_bought' %}active{% endif %}" href="{% url 'dashboard_bought' %}">Bundel Terjual</a>
+        </li>
+    </ul>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+            <div class="d-block text-right">
+                <a href="{% url 'dashboard_bundle_editor' %}" class="btn btn-success">Tambah</a>
+            </div>
+
+            {% if messages %}
+                <ul class="messages list-unstyled mt-2 mb-2">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }} mb-0"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="card mt-1">
+                <div class="card-content">
+                    <table class="table-sm-del table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Koin</th>
+                                <th style="width:60px">Aksi</th>
+                            </tr>
+                        </thead>
+
+                        {% for item in bundles_pagination %}
+                            <tr>
+                                <td>{{ item.label }}</td>
+                                <td>{{ item.coin_amount }}</td>
+                                <td>
+                                    <a href="{% url 'dashboard_bundle_editor' item.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            {% if bundles_pagination.has_other_pages %}
+                <div class="d-block w-100 mt-2">
+                    {% pagination pagination %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

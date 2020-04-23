@@ -77,3 +77,21 @@ if not is_model_registered('tryout', 'ProgramStudy'):
             db_table = 'tryout_program_study'
 
     __all__.append('ProgramStudy')
+
+
+# 8
+if not is_model_registered('tryout', 'Category'):
+    class Category(AbstractCategory):
+        class Meta(AbstractCategory.Meta):
+            db_table = 'tryout_category'
+
+    __all__.append('Category')
+
+
+# 9
+if not is_model_registered('tryout', 'Attachment'):
+    class Attachment(AbstractAttachment):
+        class Meta(AbstractAttachment.Meta):
+            db_table = 'tryout_attachment'
+
+    __all__.append('Attachment')

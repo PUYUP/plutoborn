@@ -56,12 +56,20 @@ class PacketDetailView(LoginRequiredMixin, View):
         if simulations:
             simulations = packet.simulations.filter(user_id=request.user.id).order_by('-date_created')
 
-        bundle_password = None
         bundle = getattr(packet, 'bundle_set', None)
         if bundle:
-            bundle = packet.bundle_set.first()
-            bundle_password = packet.bundle_set.filter(password__isnull=False, bundle_passwords__isnull=False)
-            bundle_password = bundle_password.exists()
+            bundle = packet.bundle_set \
+                .annotate(
+                    is_password_passed=Case(
+                        When(
+                            Q(bundle_passwords__isnull=False) & Q(bundle_passwords__user_id=user.id),
+                            then=Value(True)
+                        ),
+                        default=Value(False),
+                        output_field=BooleanField()
+                    )
+                ) \
+                .first()
 
         theories = packet.questions \
             .values('theory', 'theory__label', 'theory__duration') \
@@ -75,14 +83,24 @@ class PacketDetailView(LoginRequiredMixin, View):
         self.context['simulations'] = simulations
         self.context['theories'] = theories
         self.context['form'] = self.form(bundle=bundle, request=request)
-        self.context['bundle_password'] = bundle_password
         self.context['program_studies'] = ProgramStudy.objects.all()
         return render(request, self.template_name, self.context)
 
     def post(self, request, packet_uuid=None):
         user = request.user
         packet = self.get_packet(packet_uuid=packet_uuid, user=user)
-        bundle = packet.bundle_set.first()
+        bundle = packet.bundle_set \
+            .annotate(
+                is_password_passed=Case(
+                    When(
+                        Q(bundle_passwords__isnull=False) & Q(bundle_passwords__user_id=user.id),
+                        then=Value(True)
+                    ),
+                    default=Value(False),
+                    output_field=BooleanField()
+                )
+            ) \
+            .first()
 
         form = self.form(request.POST, bundle=bundle, request=request)
         if form.is_valid():
@@ -93,4 +111,8 @@ class PacketDetailView(LoginRequiredMixin, View):
             return redirect(reverse('packet_detail', kwargs={'packet_uuid': packet_uuid}))
 
         self.context['form'] = form
+        self.context['HOLD'] = HOLD
+        self.context['SCORE'] = SCORE
+        self.context['NATIONAL'] = NATIONAL
+        self.context['bundle'] = bundle
         return render(request, self.template_name, self.context)

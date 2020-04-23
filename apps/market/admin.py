@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from utils.generals import get_model
 
 Bundle = get_model('market', 'Bundle')
+BundlePasswordPassed = get_model('market', 'BundlePasswordPassed')
 Bought = get_model('market', 'Bought')
 BoughtProof = get_model('market', 'BoughtProof')
 BoughtProofRequirement = get_model('market', 'BoughtProofRequirement')
@@ -56,6 +57,7 @@ class BoughtProofExtend(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(Bundle, BundleExtend)
+admin.site.register(BundlePasswordPassed)
 admin.site.register(Bought)
 admin.site.register(Voucher)
 admin.site.register(VoucherRedeem)

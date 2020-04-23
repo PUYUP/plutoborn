@@ -15,7 +15,7 @@
 
                 {{ packet.label }}
 
-                {% if bundle.password and not bundle_password %}
+                {% if bundle.password and not bundle.is_password_passed %}
                     <span class="ml-auto text-uppercase text-danger font-weight-bolder">Dilindungi Password</span>
                 {% else %}
                     <button type="button" id="simulate-action" class="btn btn-success btn-sm ml-auto text-uppercase"
@@ -38,7 +38,7 @@
     {% else %}
         <div class="row">
             <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-10">
-                {% if bundle.password and not bundle_password %}
+                {% if bundle.password and not bundle.is_password_passed %}
                     <div class="card">
                         <form action="{% url 'packet_detail' packet.uuid %}" class="card-body" method="post">
                             <div class="form-group d-flex w-100 mb-0">

@@ -108,6 +108,14 @@ class SimulationAdmin(admin.ModelAdmin):
     list_display = ('packet', 'user', 'start_date', 'is_done', 'chance',)
     list_filter = ('user', 'packet',)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = qs \
+            .prefetch_related(Prefetch('user'), Prefetch('packet'), Prefetch('acquired'),
+                              Prefetch('program_study')) \
+            .select_related('user', 'packet', 'acquired')
+        return queryset
+
 
 admin.site.register(Theory, TheoryAdmin)
 admin.site.register(Packet, PacketAdmin)

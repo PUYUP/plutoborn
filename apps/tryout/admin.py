@@ -81,11 +81,26 @@ class ChoiceAdmin(admin.ModelAdmin):
     readonly_fields = ('label', 'question', 'identifier', 'score', 'description',
                        'explanation', 'right_choice',)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = qs \
+            .prefetch_related(Prefetch('packet'), Prefetch('question')) \
+            .select_related('packet', 'question')
+        return queryset
+
 
 class AnswerAdmin(admin.ModelAdmin):
     model = Answer
     list_display = ('user', 'question', 'right_choice',)
     list_filter = ('right_choice', 'packet', 'packet__questions__theory',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = qs \
+            .prefetch_related(Prefetch('user'), Prefetch('packet'), Prefetch('question'),
+                              Prefetch('choice'), Prefetch('simulation')) \
+            .select_related('user', 'packet', 'question', 'choice', 'simulation')
+        return queryset
 
 
 class SimulationAdmin(admin.ModelAdmin):

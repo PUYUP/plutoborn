@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.forms import PasswordResetForm
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 
 from utils.generals import get_model
 from apps.person.forms import (
@@ -69,7 +70,8 @@ class SignUpView(View):
 
         self.context['form'] = self.form(initial={'email': email}, request=request)
         return render(request, self.template_name, self.context)
-
+    
+    @transaction.atomic
     def post(self, request):
         email = request.session.get('email', False)
         form = self.form(request.POST, initial={'email': email}, request=request)
@@ -152,6 +154,7 @@ class VerifyView(View):
         self.context['form'] = self.form(request=request)
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request):
         form = self.form(request.POST, request=request)
         if form.is_valid():
@@ -191,6 +194,7 @@ class BoardingView(View):
         self.context['form'] = self.form()
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request):
         form = self.form(request.POST)
         if form.is_valid():

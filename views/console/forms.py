@@ -45,7 +45,7 @@ class PacketForm(forms.ModelForm):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        exclude = ('packet', 'sub_theory',)
+        exclude = ('packet', 'score',)
         widgets = {
             'description': forms.Textarea(attrs={'rows':3}),
         }
@@ -117,3 +117,7 @@ class BundleForm(forms.ModelForm):
             pass
 
         return self.cleaned_data
+
+
+class QuestionImportForm(forms.Form):
+    file = forms.FileField()

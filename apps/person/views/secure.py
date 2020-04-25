@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.translation import ugettext_lazy as _
 from django.contrib import messages
+from django.db import transaction
 
 from utils.generals import get_model
 from apps.person.forms import SecureForm
@@ -29,6 +30,7 @@ class SecureView(LoginRequiredMixin, View):
         self.context['form'] = self.form(initial=initial, request=request)
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request):
         form = self.form(request.POST, request=request)
         user = request.user

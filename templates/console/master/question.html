@@ -33,6 +33,16 @@
             {% endif %}
 
             <div class="card mt-1">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form | crispy }}
+                        <button type="submit" class="btn btn-success ml-0 mr-0">Import</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-1">
                 <div class="card-content">
                     <table class="table-sm-del table">
                         <thead>

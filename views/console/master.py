@@ -1,5 +1,7 @@
-from django.conf import settings
+import pandas as pd
+import numpy as np
 
+from django.conf import settings
 from django.views import View
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -8,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import Count, Q, Sum, Prefetch
 from django.contrib.contenttypes.models import ContentType
 
@@ -17,12 +20,15 @@ from apps.payment.utils.general import money_to_coin
 from utils.midtransclient.error_midtrans import MidtransAPIError
 
 from views.console.forms import (
-    TheoryForm, PacketForm, QuestionForm, ChoiceFormSetFactory, CategoryForm)
+    TheoryForm, PacketForm, QuestionForm, ChoiceFormSetFactory, CategoryForm,
+    QuestionImportForm
+)
 
 Category = get_model('tryout', 'Category')
 Theory = get_model('tryout', 'Theory')
 Packet = get_model('tryout', 'Packet')
 Question = get_model('tryout', 'Question')
+Choice = get_model('tryout', 'Choice')
 TopUp = get_model('payment', 'TopUp')
 
 SNAP = settings.SNAP
@@ -63,6 +69,7 @@ class TheoryEditorView(LoginRequiredMixin, View):
         self.context['messages'] = messages.get_messages(request)
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request, pk=None):
         try:
             queryset = Theory.objects.get(pk=pk)
@@ -94,6 +101,7 @@ class TheoryDeleteView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
+    @transaction.atomic
     def get(self, request, pk=None):
         try:
             queryset = Theory.objects.get(pk=pk)
@@ -142,6 +150,7 @@ class CategoryEditorView(LoginRequiredMixin, View):
         self.context['messages'] = messages.get_messages(request)
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request, pk=None):
         try:
             queryset = Category.objects.get(pk=pk)
@@ -173,6 +182,7 @@ class CategoryDeleteView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
+    @transaction.atomic
     def get(self, request, pk=None):
         try:
             queryset = Category.objects.get(pk=pk)
@@ -225,6 +235,7 @@ class PacketEditorView(LoginRequiredMixin, View):
         self.context['messages'] = messages.get_messages(request)
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request, pk=None):
         try:
             queryset = Packet.objects.get(pk=pk)
@@ -256,6 +267,7 @@ class PacketDeleteView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
+    @transaction.atomic
     def get(self, request, pk=None):
         try:
             queryset = Packet.objects.get(pk=pk)
@@ -278,6 +290,7 @@ class QuestionView(LoginRequiredMixin, View):
 
     template_name = 'console/master/question.html'
     context = dict()
+    form = QuestionImportForm
 
     def get(self, request, packet_id=None, theory_id=None, pk=None):
         try:
@@ -285,14 +298,156 @@ class QuestionView(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             return redirect(reverse('dashboard_packet'))
 
-        questions = Question.objects.filter(packet_id=packet_id).order_by('numbering')
+        questions = Question.objects \
+            .prefetch_related(Prefetch('packet'), Prefetch('theory')) \
+            .select_related('packet', 'theory') \
+            .filter(packet_id=packet_id).order_by('numbering')
         if theory_id:
             questions = questions.filter(theory_id=theory_id)
 
+        self.context['form'] = self.form()
         self.context['theory_id'] = theory_id
         self.context['packet'] = packet
         self.context['questions'] = questions
+        self.context['messages'] = messages.get_messages(request)
         return render(request, self.template_name, self.context)
+
+    @transaction.atomic
+    def post(self, request, packet_id=None, theory_id=None, pk=None):
+        packet = Packet.objects.get(id=packet_id)
+        form = self.form(request.POST, request.FILES)
+
+        if form.is_valid():
+            combined_data = list()
+            saved_data = list()
+            read_data = pd.read_excel(request.FILES['file'], sheet_name='Sheet1')
+
+            # Convert each column to list()
+            theories = read_data['MATERI'].tolist()
+            sub_theories = read_data['SUB_MATERI'].tolist()
+            numberings = read_data['NOMOR'].tolist()
+            questions = read_data['PERTANYAAN'].tolist()
+            descriptions = read_data['KETERANGAN'].tolist()
+            explanations = read_data['PEMBAHASAN'].tolist()
+            choices_a = read_data['A'].tolist()
+            choices_b = read_data['B'].tolist()
+            choices_c = read_data['C'].tolist()
+            choices_d = read_data['D'].tolist()
+            choices_e = read_data['E'].tolist()
+            choices_true = read_data['BENAR'].tolist()
+            scores_a = read_data['SKOR_A'].tolist()
+            scores_b = read_data['SKOR_B'].tolist()
+            scores_c = read_data['SKOR_C'].tolist()
+            scores_d = read_data['SKOR_D'].tolist()
+            scores_e = read_data['SKOR_E'].tolist()
+
+            # Combined here
+            for index, item in enumerate(questions):
+                data = {
+                    'packet': packet.pk,
+                    'numbering': numberings[index],
+                    'label': questions[index],
+                    'theory': theories[index],
+                    'sub_theory': sub_theories[index],
+                    'description': descriptions[index],
+                    'explanation': explanations[index],
+                }
+
+                right_choice = choices_true[index] if choices_true[index] else ''
+                choices = list()
+                for idx, itm in enumerate(choices_a):
+                    x = {
+                        'A': {
+                            'label': choices_a[idx],
+                            'score': int(scores_a[idx]) if not np.isnan(scores_a[idx]) else '',
+                            'right_choice': right_choice == 'A',
+                        },
+                        'B': {
+                            'label': choices_b[idx],
+                            'score': int(scores_b[idx]) if not np.isnan(scores_b[idx]) else '',
+                            'right_choice': right_choice == 'B',
+                        },
+                        'C': {
+                            'label': choices_c[idx],
+                            'score': int(scores_c[idx]) if not np.isnan(scores_c[idx]) else '',
+                            'right_choice': right_choice == 'C',
+                        },
+                        'D': {
+                            'label': choices_d[idx],
+                            'score': int(scores_d[idx]) if not np.isnan(scores_d[idx]) else '',
+                            'right_choice': right_choice == 'D',
+                        },
+                        'E': {
+                            'label': choices_e[idx],
+                            'score': int(scores_e[idx]) if not np.isnan(scores_e[idx]) else '',
+                            'right_choice': right_choice == 'E',
+                        },
+                    }
+                    choices.append(x)
+
+                data['question_%s' % index] = choices[index]
+                combined_data.append(data)
+
+            # Prepare create
+            for index, item in enumerate(combined_data):
+                try:
+                    theory_object = Theory.objects.get(label=item['theory'])
+                except ObjectDoesNotExist:
+                    theory_object = None
+
+                try:
+                    sub_theory_object = Theory.objects.get(label=item['sub_theory'])
+                except ObjectDoesNotExist:
+                    sub_theory_object = None
+
+                data = Question(
+                    packet=packet,
+                    label=item['label'],
+                    theory=theory_object,
+                    sub_theory=sub_theory_object,
+                    description=item['description'],
+                    explanation=item['explanation'],
+                )
+                saved_data.append(data)
+
+            # Save all!
+            Question.objects.bulk_create(saved_data)
+
+            # Prepare assign choice to question
+            questions = packet.questions \
+                .prefetch_related(Prefetch('packet'), Prefetch('theory')) \
+                .select_related('packet', 'theory') \
+                .all()
+
+            qcount = questions.count()
+            if questions.exists():
+                questions = questions[qcount-len(combined_data):qcount]
+   
+            for index, question in enumerate(questions):
+                choices_object = list()
+                q = combined_data[index]
+                choices = q['question_%s' % index]
+
+                for identifier in choices:
+                    itm = choices[identifier]
+                    c = Choice(
+                        identifier=identifier,
+                        label=itm['label'],
+                        right_choice=itm['right_choice'],
+                        packet=packet,
+                        question=question,
+                    )
+
+                    if itm['score']:
+                        setattr(c, 'score', itm['score'])
+                    choices_object.append(c)
+
+                # create choices
+                Choice.objects.bulk_create(choices_object)
+
+        msg = _("Import %s pertanyaan berhasil." % len(combined_data))
+        messages.add_message(request, messages.INFO, msg)
+        return redirect(reverse('dashboard_question_reorder', kwargs={'packet_id': packet_id}))
 
 
 class QuestionReorderView(LoginRequiredMixin, View):
@@ -364,6 +519,7 @@ class QuestionEditorView(LoginRequiredMixin, View):
         self.context['question_ct'] = question_ct
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request, packet_id=None, theory_id=None, pk=None):
         try:
             packet = Packet.objects.get(id=packet_id)
@@ -410,6 +566,7 @@ class QuestionDeleteView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
+    @transaction.atomic
     def get(self, request, packet_id=None, pk=None):
         try:
             queryset = Question.objects.get(pk=pk, packet_id=packet_id)

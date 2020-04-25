@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.views import View
+from django.db import transaction
 from django.db.models import Prefetch
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -68,6 +69,7 @@ class BundleEditorView(LoginRequiredMixin, View):
         self.context['messages'] = messages.get_messages(request)
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request, pk=None):
         try:
             queryset = Bundle.objects.get(pk=pk)

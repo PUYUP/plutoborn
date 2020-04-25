@@ -3,6 +3,7 @@ from django.views import View
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.db.models import (
     Count, Prefetch, Case, When, Value, BooleanField, IntegerField,
     F, Q, Subquery, OuterRef, CharField, Sum, FloatField)
@@ -452,6 +453,7 @@ class SimulationRankingView(LoginRequiredMixin, View):
         self.context['theories_filtered'] = theories_filtered
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request, simulation_uuid=None):
         chance = request.POST.get('chance', 1)
         theory = request.POST.get('theory', 1)

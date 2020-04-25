@@ -2,6 +2,7 @@ from django.views import View
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.db.models import (
     Count, Prefetch, Case, When, Value, BooleanField, IntegerField,
     F, Q, Subquery, OuterRef)
@@ -86,6 +87,7 @@ class PacketDetailView(LoginRequiredMixin, View):
         self.context['program_studies'] = ProgramStudy.objects.all()
         return render(request, self.template_name, self.context)
 
+    @transaction.atomic
     def post(self, request, packet_uuid=None):
         user = request.user
         packet = self.get_packet(packet_uuid=packet_uuid, user=user)

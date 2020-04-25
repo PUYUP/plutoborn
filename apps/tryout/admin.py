@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
+from django.db.models import Prefetch
 
 from utils.generals import get_model
 from apps.tryout.utils.constant import PREFERENCE
@@ -65,6 +66,13 @@ class QuestionAdmin(admin.ModelAdmin):
     model = Question
     list_display = ('label', 'packet', 'theory',)
     inlines = (ChoiceInline,)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = qs \
+            .prefetch_related(Prefetch('packet'), Prefetch('theory')) \
+            .select_related('packet', 'theory')
+        return queryset
 
 
 class ChoiceAdmin(admin.ModelAdmin):

@@ -131,7 +131,6 @@ class SimulationResultView(LoginRequiredMixin, View):
                 answer_id=Subquery(answer_subquery.filter(choice__id=OuterRef('id')).values('id')[:1])
             ).order_by('identifier')
 
-        print(choices, 'AAAAA')
         try:
             next_question = questions.filter(numbering__gt=question.numbering).first()
         except ObjectDoesNotExist:

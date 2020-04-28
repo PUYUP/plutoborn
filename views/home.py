@@ -17,6 +17,8 @@ from apps.tryout.utils.constant import PREFERENCE, TRUE_FALSE_NONE
 
 Simulation = get_model('tryout', 'Simulation')
 Bundle = get_model('market', 'Bundle')
+CMSBanner = get_model('cms', 'CMSBanner')
+CMSVideo = get_model('cms', 'CMSVideo')
 
 
 class HomeView(LoginRequiredMixin, View):
@@ -230,10 +232,18 @@ class HomeView(LoginRequiredMixin, View):
                 )
             )[:4]
     
+        # CMS
+        banners = CMSBanner.objects.filter(is_active=True).order_by('sort')
+        videos = CMSVideo.objects.filter(is_active=True).order_by('sort')
+
         self.context['simulation_due'] = simulation_due
         self.context['simulation_stat'] = simulation_stat
         self.context['my_coins'] = account.coin_amounts
         self.context['my_points'] = account.points_amounts
         self.context['bundles'] = bundles
         self.context['packets'] = packets
+
+        # CMS
+        self.context['banners'] = banners
+        self.context['videos'] = videos
         return render(request, self.template_name, self.context)

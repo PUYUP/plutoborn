@@ -22,6 +22,7 @@ PROJECT_APPS = [
     'apps.market.apps.MarketConfig',
     'apps.payment.apps.PaymentConfig',
     'apps.mypoints.apps.MyPointsConfig',
+    'apps.cms.apps.CmsConfig',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + PROJECT_APPS

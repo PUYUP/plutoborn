@@ -12,6 +12,10 @@ from views.console.bundle import (
     BundleView, BundleEditorView, BundleDeleteView, BoughtView, BoughtDetailView,
     BoughtAcceptView)
 
+from views.console.cms.views import (
+    CMSView, CMSBannerView, CMSBannerEditorView, CMSBannerDeleteView,
+    CMSVideoView, CMSVideoEditorView, CMSVideoDeleteView)
+
 urlpatterns = [
     path('', DashboardView.as_view(), name='dashboard'),
 
@@ -48,4 +52,15 @@ urlpatterns = [
 
     path('topup/', TopUpView.as_view(), name='dashboard_topup'),
     path('topup/<int:pk>/', TopUpDetailView.as_view(), name='dashboard_topup_detail'),
+
+    path('cms/', CMSView.as_view(), name='cms_home'),
+    path('cms/banner/', CMSBannerView.as_view(), name='cms_banner'),
+    path('cms/banner/editor/', CMSBannerEditorView.as_view(), name='cms_banner_editor'),
+    path('cms/banner/<int:pk>/editor/', CMSBannerEditorView.as_view(), name='cms_banner_editor'),
+    path('cms/banner/<int:pk>/delete/', CMSBannerDeleteView.as_view(), name='cms_banner_delete'),
+
+    path('cms/video/', CMSVideoView.as_view(), name='cms_video'),
+    path('cms/video/editor/', CMSVideoEditorView.as_view(), name='cms_video_editor'),
+    path('cms/video/<int:pk>/editor/', CMSVideoEditorView.as_view(), name='cms_video_editor'),
+    path('cms/video/<int:pk>/delete/', CMSVideoDeleteView.as_view(), name='cms_video_delete'),
 ]

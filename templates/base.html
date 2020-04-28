@@ -60,14 +60,14 @@
                             <li class="nav-item mobile-menu d-xl-none mr-auto"><a class="nav-link nav-menu-main menu-toggle hidden-xs" href="#"><i class="ficon bx bx-menu"></i></a></li>
                         </ul>
 
-                        {% comment %}
-                            <ul class="nav navbar-nav bookmark-icons">
-                                <li class="nav-item d-none d-lg-block"><a class="nav-link" href="app-email.html" data-toggle="tooltip" data-placement="top" title="Email"><i class="ficon bx bx-envelope"></i></a></li>
-                                <li class="nav-item d-none d-lg-block"><a class="nav-link" href="app-chat.html" data-toggle="tooltip" data-placement="top" title="Chat"><i class="ficon bx bx-chat"></i></a></li>
-                                <li class="nav-item d-none d-lg-block"><a class="nav-link" href="app-todo.html" data-toggle="tooltip" data-placement="top" title="Todo"><i class="ficon bx bx-check-circle"></i></a></li>
-                                <li class="nav-item d-none d-lg-block"><a class="nav-link" href="app-calendar.html" data-toggle="tooltip" data-placement="top" title="Calendar"><i class="ficon bx bx-calendar-alt"></i></a></li>
-                            </ul>
-                        {% endcomment %}
+                        <ul class="nav navbar-nav bookmark-icons">
+                            <li class="nav-item d-lg-block">
+                                <a class="nav-link" href="https://wa.me/6282250993260?text=Hai%20admin!%20Ada%20yang%20ingin%20saya%20tanyakan" data-toggle="tooltip" data-placement="top" title="Hubungi di WhatsApp">
+                                    <i class="ficon bx bxl-whatsapp"></i>
+                                    Tanya di WhatsApp
+                                </a>
+                            </li>
+                        </ul>
                     </div>
 
                     <ul class="nav navbar-nav float-right">
@@ -154,6 +154,13 @@
                         <a href="{% url 'dashboard_topup' %}">
                             <i class="menu-livicon" data-icon="coins"></i>
                             <span class="menu-title" data-i18n="Topup">Topup</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item {% if request.resolver_match.url_name == 'cms_banner_editor' or request.resolver_match.url_name == 'cms_banner' or request.resolver_match.url_name == 'cms_banner' or request.resolver_match.url_name == 'cms_video' or request.resolver_match.url_name == 'cms_home' %}active{% endif %}">
+                        <a href="{% url 'cms_home' %}">
+                            <i class="menu-livicon" data-icon="gears"></i>
+                            <span class="menu-title" data-i18n="CMS">CMS</span>
                         </a>
                     </li>
                 {% else %}

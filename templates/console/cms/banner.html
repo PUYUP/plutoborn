@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static listing %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}Banner{% endblock %}
+{% block content_title %}Banner{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+            <div class="d-block text-right">
+                <a href="{% url 'cms_banner_editor' %}" class="btn btn-success">Tambah</a>
+            </div>
+
+            {% if messages %}
+                <ul class="messages list-unstyled mt-2 mb-2">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }} mb-0"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <div class="card mt-1">
+                <div class="card-content">
+                    <table class="table-sm-del table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Keterangan</th>
+                                <th>Aktif</th>
+                                <th style="width:60px">Aksi</th>
+                            </tr>
+                        </thead>
+
+                        {% for item in queryset_pagination %}
+                            <tr>
+                                <td>{{ item.label }}</td>
+                                <td>{{ item.description }}</td>
+
+                                <td>
+                                    {% if item.is_active %}Aktif{% else %}Non-Aktif{% endif %}
+                                </td>
+
+                                <td>
+                                    <a href="{% url 'cms_banner_editor' item.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            {% if queryset_pagination.has_other_pages %}
+                <div class="d-block w-100 mt-2">
+                    {% pagination pagination %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

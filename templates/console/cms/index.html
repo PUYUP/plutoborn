@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block head_title %}Dashboard CMS{% endblock %}
+{% block content_title %}Dashboard CMS{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center mb-2">
+                <div class="card-content">
+                    <a href="{% url 'cms_banner' %}" class="card-body py-1">
+                        <h3 class="mb-0">Banner</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center mb-2">
+                <div class="card-content">
+                    <a href="{% url 'cms_video' %}" class="card-body py-1">
+                        <h3 class="mb-0">Video</h3>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

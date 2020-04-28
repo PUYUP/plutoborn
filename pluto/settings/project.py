@@ -69,7 +69,7 @@ LOGOUT_REDIRECT_URL = '/'
 COIN_EXCHANGE = 1
 SITE_NAME = 'Try Out'
 COMMISSION = 2 # in percent
-PAGINATION_PER_PAGE = 25
+PAGINATION_PER_PAGE = 1
 
 
 # Email Configuration

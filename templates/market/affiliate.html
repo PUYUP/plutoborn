@@ -77,6 +77,14 @@
                                     </div>
                                 </li>
                             {% endfor %}
+
+                            {% if acquireds.exists %}
+                                <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-center pt-0 pb-0">
+                                    <a href="{% url 'affiliate_list' %}" class="list-left d-flex p-1">
+                                        Lihat semua
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -126,6 +134,14 @@
                                     <span>Rp {% if item.transaction_type == OUT %}-{% endif %}{{ item.amount|intcomma|safe }}</span>
                                 </li>
                             {% endfor %}
+
+                            {% if commissions.exists %}
+                                <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-center pt-0 pb-0">
+                                    <a href="{% url 'affiliate_commission' %}" class="list-left d-flex p-1">
+                                        Lihat semua
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>

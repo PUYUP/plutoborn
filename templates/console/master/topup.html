@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load listing %}
 {% load crispy_forms_tags %}
 
 {% block head_title %}Topup{% endblock %}
@@ -30,7 +31,7 @@
                             </tr>
                         </thead>
 
-                        {% for item in topups %}
+                        {% for item in topups_pagination %}
                             <tr>
                                 <td class="text-capitalize font-weight-bolder">
                                     <a href="{% url 'dashboard_topup_detail' item.id %}">{{ item.user.username }}</a>
@@ -44,6 +45,12 @@
                     </table>
                 </div>
             </div>
+
+            {% if topups_pagination.has_other_pages %}
+                <div class="d-block w-100">
+                    {% pagination pagination %}
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

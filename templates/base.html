@@ -179,15 +179,15 @@
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'coin' or request.resolver_match.url_name == 'topup_detail' %}active{% endif %}">
-                        <a href="{% url 'coin' %}">
+                    <li class="nav-item {% if request.resolver_match.url_name == 'payment_topup' or request.resolver_match.url_name == 'payment_coin' or request.resolver_match.url_name == 'payment' or request.resolver_match.url_name == 'topup_detail' %}active{% endif %}">
+                        <a href="{% url 'payment' %}">
                             <i class="menu-livicon" data-icon="coins"></i>
                             <span class="menu-title" data-i18n="Todo">Koin & Topup</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'points_list' %}active{% endif %}">
-                        <a href="{% url 'points_list' %}">
+                    <li class="nav-item {% if request.resolver_match.url_name == 'points' or request.resolver_match.url_name == 'points_list' %}active{% endif %}">
+                        <a href="{% url 'points' %}">
                             <i class="menu-livicon" data-icon="gift"></i>
                             <span class="menu-title" data-i18n="My Points">My Points</span>
                         </a>
@@ -200,7 +200,7 @@
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'affiliate' %}active{% endif %}">
+                    <li class="nav-item {% if request.resolver_match.url_name == 'affiliate_commission' or request.resolver_match.url_name == 'affiliate_list' or request.resolver_match.url_name == 'affiliate' %}active{% endif %}">
                         <a href="{% url 'affiliate' %}">
                             <i class="menu-livicon" data-icon="diagram"></i>
                             <span class="menu-title" data-i18n="Affiliate">Affiliate</span>

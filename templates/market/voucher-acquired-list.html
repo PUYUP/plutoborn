@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load listing %}
 {% block head_title %}Voucher Saya{% endblock %}
 {% block content_title %}Voucher Saya{% endblock %}
 
@@ -24,7 +25,7 @@
                             {% endif %}
                             
                             <ul class="list-group list-group-flush">
-                                {% for item in vouchers %}
+                                {% for item in vouchers_pagination %}
                                     <li class="list-group-item list-group-item-action border-0 d-flex align-items-center justify-content-between">
                                         <div class="list-left d-flex">
                                             <div class="list-icon mr-1">
@@ -50,6 +51,12 @@
                         </div>
                     </div>
                 </div> <!-- KOIN -->
+
+                {% if vouchers_pagination.has_other_pages %}
+                    <div class="d-block w-100">
+                        {% pagination pagination %}
+                    </div>
+                {% endif %}
             </div> <!-- /.col -->
         </div> <!-- /.row -->
     </div>

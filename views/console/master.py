@@ -13,8 +13,10 @@ from django.utils import timezone
 from django.db import transaction
 from django.db.models import Count, Q, Sum, Prefetch
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from utils.generals import get_model
+from utils.pagination import Pagination
 from apps.payment.utils.constant import SETTLEMENT, CAPTURE, PENDING, EXPIRED
 from apps.payment.utils.general import money_to_coin
 from utils.midtransclient.error_midtrans import MidtransAPIError
@@ -212,7 +214,22 @@ class PacketView(LoginRequiredMixin, View):
             .select_related('category') \
             .all()
 
+        # paginator
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(packets, settings.PAGINATION_PER_PAGE)
+
+        try:
+            packets_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            packets_pagination = paginator.page(1)
+        except EmptyPage:
+            packets_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, packets, packets_pagination, page_num, paginator)
+
         self.context['packets'] = packets
+        self.context['packets_pagination'] = packets_pagination
+        self.context['pagination'] = pagination
         return render(request, self.template_name, self.context)
 
 
@@ -595,7 +612,23 @@ class TopUpView(LoginRequiredMixin, View):
             .prefetch_related(Prefetch('user')) \
             .select_related('user') \
             .order_by('-date_created')
+
+        # paginator
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(topups, settings.PAGINATION_PER_PAGE)
+
+        try:
+            topups_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            topups_pagination = paginator.page(1)
+        except EmptyPage:
+            topups_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, topups, topups_pagination, page_num, paginator)
+
         self.context['topups'] = topups
+        self.context['topups_pagination'] = topups_pagination
+        self.context['pagination'] = pagination
         return render(request, self.template_name, self.context)
 
 

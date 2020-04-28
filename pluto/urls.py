@@ -22,6 +22,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
+# Change adminstration label
+admin.site.site_header = 'Administrator'
+admin.site.site_title = 'Administrator'
+admin.site.index_title = 'Welcome'
+
 urlpatterns += static(settings.MEDIA_URL,
                       document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL,

@@ -1,11 +1,14 @@
+from django.conf import settings
 from django.views import View
 from django.shortcuts import render
 from django.db.models import Q, Prefetch, Sum, IntegerField, Case, When, Value, F
 from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from utils.generals import get_model
+from utils.pagination import Pagination
 from apps.payment.utils.constant import IN, OUT, SETTLEMENT, CAPTURE, EXPIRED
 
 User = get_user_model()
@@ -22,33 +25,24 @@ class CoinView(LoginRequiredMixin, View):
         user = request.user
         coins = user.coins.prefetch_related(Prefetch('user'), Prefetch('caused_content_type')) \
             .select_related('user', 'caused_content_type')
-        topups = user.topups.prefetch_related(Prefetch('user')) \
-            .select_related('user')
     
-        sum_in = Coalesce(Sum('amount', filter=Q(transaction_type=IN), output_field=IntegerField()), 0)
-        sum_out = Coalesce(Sum('amount', filter=Q(transaction_type=OUT), output_field=IntegerField()), 0)
+        # paginator
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(coins, settings.PAGINATION_PER_PAGE)
 
-        coins_total = coins.aggregate(
-            total_in=sum_in,
-            total_out=sum_out,
-            total_active=sum_in - sum_out
-        )
-        coins_in_total = coins_total.get('total_in', 0)
-        coins_out_total = coins_total.get('total_out', 0)
-        coins_total_active = coins_total.get('total_active', 0)
+        try:
+            coins_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            coins_pagination = paginator.page(1)
+        except EmptyPage:
+            coins_pagination = paginator.page(paginator.num_pages)
 
-        # user has commissions
-        commission_amounts = user.account.commission_amounts
+        pagination = Pagination(request, coins, coins_pagination, page_num, paginator)
 
-        self.context['IN'] = IN
-        self.context['OUT'] = OUT
         self.context['SETTLEMENT'] = SETTLEMENT
         self.context['CAPTURE'] = CAPTURE
         self.context['EXPIRED'] = EXPIRED
-        self.context['topups'] = topups
         self.context['coins'] = coins
-        self.context['coins_in_total'] = coins_in_total if coins_in_total else 0
-        self.context['coins_out_total'] = coins_out_total if coins_out_total else 0
-        self.context['coins_total_active'] = coins_total_active if coins_total_active else 0
-        self.context['commission_amounts'] = commission_amounts
+        self.context['coins_pagination'] = coins_pagination
+        self.context['pagination'] = pagination
         return render(request, self.template_name, self.context)

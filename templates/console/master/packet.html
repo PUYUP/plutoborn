@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load listing %}
 
 {% block head_title %}Paket{% endblock %}
 {% block content_title %}Paket {{ queryset.label }}{% endblock %}
@@ -29,7 +30,7 @@
                             </tr>
                         </thead>
 
-                        {% for item in packets %}
+                        {% for item in packets_pagination %}
                             <tr>
                                 <td>{{ item.label }}</td>
                                 <td>{{ item.category.label }}</td>
@@ -44,6 +45,12 @@
                     </table>
                 </div>
             </div>
+
+            {% if packets_pagination.has_other_pages %}
+                <div class="d-block w-100">
+                    {% pagination pagination %}
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

@@ -4,12 +4,14 @@ from django.views import View
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from utils.generals import get_model
+from utils.pagination import Pagination
 from utils.midtransclient.error_midtrans import MidtransAPIError
 
 from apps.payment.utils.general import money_to_coin
@@ -19,14 +21,36 @@ User = get_user_model()
 SNAP = settings.SNAP
 
 
-class TopUpListView(LoginRequiredMixin, View):
+class TopUpView(LoginRequiredMixin, View):
     login_url = '/login/'
     redirect_field_name = 'redirect_to'
 
-    template_name = 'payment/topup-list.html'
+    template_name = 'payment/topup.html'
     context = dict()
 
     def get(self, request):
+        user = request.user
+        topups = user.topups.prefetch_related(Prefetch('user')).select_related('user')
+
+        # paginator
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(topups, settings.PAGINATION_PER_PAGE)
+
+        try:
+            topups_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            topups_pagination = paginator.page(1)
+        except EmptyPage:
+            topups_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, topups, topups_pagination, page_num, paginator)
+
+        self.context['SETTLEMENT'] = SETTLEMENT
+        self.context['CAPTURE'] = CAPTURE
+        self.context['EXPIRED'] = EXPIRED
+        self.context['topups'] = topups
+        self.context['topups_pagination'] = topups_pagination
+        self.context['pagination'] = pagination
         return render(request, self.template_name, self.context)
 
 

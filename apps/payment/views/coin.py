@@ -9,7 +9,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from utils.generals import get_model
 from utils.pagination import Pagination
-from apps.payment.utils.constant import IN, OUT, SETTLEMENT, CAPTURE, EXPIRED
+from apps.payment.utils.constant import IN, OUT
 
 User = get_user_model()
 
@@ -39,9 +39,8 @@ class CoinView(LoginRequiredMixin, View):
 
         pagination = Pagination(request, coins, coins_pagination, page_num, paginator)
 
-        self.context['SETTLEMENT'] = SETTLEMENT
-        self.context['CAPTURE'] = CAPTURE
-        self.context['EXPIRED'] = EXPIRED
+        self.context['IN'] = IN
+        self.context['OUT'] = OUT
         self.context['coins'] = coins
         self.context['coins_pagination'] = coins_pagination
         self.context['pagination'] = pagination

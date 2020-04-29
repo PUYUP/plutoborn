@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Prefetch
 
 from utils.generals import get_model
 
@@ -55,10 +56,22 @@ class BoughtProofExtend(admin.ModelAdmin):
     inlines = [BoughtProofDocumentInline,]
 
 
+class BoughtExtend(admin.ModelAdmin):
+    model = Bought
+    list_display = ('bundle', 'user', 'status',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = qs \
+            .prefetch_related(Prefetch('user'), Prefetch('bundle')) \
+            .select_related('user', 'bundle')
+        return queryset
+
+
 # Register your models here.
 admin.site.register(Bundle, BundleExtend)
 admin.site.register(BundlePasswordPassed)
-admin.site.register(Bought)
+admin.site.register(Bought, BoughtExtend)
 admin.site.register(Voucher)
 admin.site.register(VoucherRedeem)
 admin.site.register(Affiliate)

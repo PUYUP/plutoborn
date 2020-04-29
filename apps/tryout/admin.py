@@ -117,12 +117,24 @@ class SimulationAdmin(admin.ModelAdmin):
         return queryset
 
 
+class AcquiredExtend(admin.ModelAdmin):
+    model = Acquired
+    list_display = ('packet', 'user', 'status',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = qs \
+            .prefetch_related(Prefetch('user'), Prefetch('packet')) \
+            .select_related('user', 'packet')
+        return queryset
+
+
 admin.site.register(Theory, TheoryAdmin)
 admin.site.register(Packet, PacketAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Answer, AnswerAdmin)
-admin.site.register(Acquired)
+admin.site.register(Acquired, AcquiredExtend)
 admin.site.register(Simulation, SimulationAdmin)
 admin.site.register(ProgramStudy)
 admin.site.register(Category)

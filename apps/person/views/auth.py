@@ -8,10 +8,11 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.contrib.auth.views import LoginView
 
 from utils.generals import get_model
 from apps.person.forms import (
-    BoardingForm, VerifyForm, SignupForm)
+    BoardingForm, VerifyForm, SignupForm, CustomAuthenticationForm)
 from apps.person.utils.constant import REGISTER_VALIDATION
 from apps.payment.utils.constant import IN
 
@@ -19,6 +20,10 @@ OTPCode = get_model('person', 'OTPCode')
 Affiliate = get_model('market', 'Affiliate')
 AffiliateAcquired = get_model('market', 'AffiliateAcquired')
 Points = get_model('mypoints',  'Points')
+
+
+class CustomLoginView(LoginView):
+    authentication_form = CustomAuthenticationForm
 
 
 class EmailValidationOnForgotPassword(PasswordResetForm):

@@ -8,6 +8,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.contrib.auth.forms import AuthenticationForm, UsernameField
 
 from utils.generals import get_model
 from apps.person.utils.constant import SELECT_ROLES, REGISTERED
@@ -29,6 +30,13 @@ try:
     _REGISTERED = REGISTERED
 except NameError:
     _REGISTERED = list()
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    username = UsernameField(
+        label=_("Nama Pengguna atau Email"),
+        widget=forms.TextInput(attrs={'autofocus': True})
+    )
 
 
 class UserChangeFormExtend(UserChangeForm):

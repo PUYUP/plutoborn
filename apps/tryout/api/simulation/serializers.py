@@ -97,12 +97,15 @@ class SimulationSerializer(serializers.ModelSerializer):
             choice = None
 
         if not choice:
-            choice = question.choices.get(
-                answers__user_id=request.user.id,
-                answers__simulation_id=obj.id,
-                answers__packet_id=obj.packet.id,
-                answers__question__uuid=question_uuid
-            )
+            try:
+                choice = question.choices.get(
+                    answers__user_id=request.user.id,
+                    answers__simulation_id=obj.id,
+                    answers__packet_id=obj.packet.id,
+                    answers__question__uuid=question_uuid
+                )
+            except ObjectDoesNotExist:
+                choice = None
 
         self.context['simulation_instance'] = obj
         serializer = ChoiceSerializer(choice, many=False, context=self.context)

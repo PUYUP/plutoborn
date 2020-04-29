@@ -6,7 +6,8 @@ from apps.person.views.auth import (
     SignUpView,
     VerifyView,
     BoardingView,
-    EmailValidationOnForgotPassword)
+    EmailValidationOnForgotPassword,
+    CustomLoginView)
 
 from apps.person.views.profile import ProfileView
 from apps.person.views.secure import SecureView
@@ -19,7 +20,7 @@ urlpatterns = [
     path('verify/', VerifyView.as_view(), name='verify'),
     path('boarding/', BoardingView.as_view(), name='boarding'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('login/', auth_views.LoginView.as_view(template_name='person/auth/login.html'), name='login'),
+    path('login/', CustomLoginView.as_view(template_name='person/auth/login.html'), name='login'),
     
     path('lost/', auth_views.PasswordResetView.as_view(template_name='person/auth/lost-password.html', form_class=EmailValidationOnForgotPassword), name='password_reset'),
     path('lost/done/', auth_views.PasswordResetDoneView.as_view(template_name='person/auth/lost-password-done.html'), name='password_reset_done'),

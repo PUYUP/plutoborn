@@ -28,6 +28,11 @@ PROJECT_APPS = [
 INSTALLED_APPS = INSTALLED_APPS + PROJECT_APPS
 
 
+# Specifying authentication backends
+# https://docs.djangoproject.com/en/3.0/topics/auth/customizing/
+AUTHENTICATION_BACKENDS = ['apps.person.utils.auth.LoginBackend',]
+
+
 # Application middleware
 PROJECT_MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

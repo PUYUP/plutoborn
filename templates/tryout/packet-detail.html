@@ -58,11 +58,13 @@
                         <div class="card-body">
                             <p>Untuk mengikuti try out ini pilih Jurusan yang diinginkan.</p>
 
-                            <select class="selectpicker form-control" id="program-studies" multiple style="min-height: 200px;">
-                                {% for item in program_studies %}
-                                    <option value="{{ item.id }}">{{ item.name }}</option>
-                                {% endfor %}
-                            </select>
+                            {% for item in program_studies %}
+                                <div class="d-block">
+                                    <input type="checkbox" id="program-studies-{{ item.id }}" class="position-relative"
+                                        value="{{ item.id }}" name="program-studies" style="top:2px;">
+                                    <label for="program-studies-{{ item.id }}" class="text-capitalize">{{ item.name }}</label>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                 {% endif %}
@@ -294,9 +296,14 @@
         $(document).on('click', '#simulate-action', function(event) {
             event.preventDefault();
 
+            var program_studies = [];
+            $.each($("input[name='program-studies']:checked"), function(){
+                program_studies.push($(this).val());
+            });
+
             var $this = $(this),
                 acquired_id = $this.data('acquired-id'),
-                program_studies = $('#program-studies').val();
+                program_studies = program_studies;
 
             $.ajax({
                 method: 'POST',

@@ -115,56 +115,56 @@
         <div class="main-menu-content">
             <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation" data-icon-style="lines">
                 {% if user.is_staff %}
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'dashboard' %}active{% endif %}">
                         <a href="{% url 'dashboard' %}">
                             <i class="menu-livicon" data-icon="home"></i>
                             <span class="menu-title" data-i18n="Dashboard">Dashboard</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_category_editor' or request.resolver_match.url_name == 'dashboard_category' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'dashboard_category_editor' or url_name == 'dashboard_category' %}active{% endif %}">
                         <a href="{% url 'dashboard_category' %}">
                             <i class="menu-livicon" data-icon="notebook"></i>
                             <span class="menu-title" data-i18n="Materi">Kategori</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_theory_editor' or request.resolver_match.url_name == 'dashboard_theory' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'dashboard_theory_editor' or url_name == 'dashboard_theory' %}active{% endif %}">
                         <a href="{% url 'dashboard_theory' %}">
                             <i class="menu-livicon" data-icon="box-add"></i>
                             <span class="menu-title" data-i18n="Materi">Materi</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_theory_question' or request.resolver_match.url_name == 'dashboard_theory_question_editor' or request.resolver_match.url_name == 'dashboard_question_editor' or request.resolver_match.url_name == 'dashboard_question' or request.resolver_match.url_name == 'dashboard_packet_editor' or request.resolver_match.url_name == 'dashboard_packet' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'dashboard_theory_question' or url_name == 'dashboard_theory_question_editor' or url_name == 'dashboard_question_editor' or url_name == 'dashboard_question' or url_name == 'dashboard_packet_editor' or url_name == 'dashboard_packet' %}active{% endif %}">
                         <a href="{% url 'dashboard_packet' %}">
                             <i class="menu-livicon" data-icon="grid"></i>
                             <span class="menu-title" data-i18n="Paket">Paket</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_bought_detail' or request.resolver_match.url_name == 'dashboard_bought' or request.resolver_match.url_name == 'dashboard_bundle_editor' or request.resolver_match.url_name == 'dashboard_bundle' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'dashboard_bought_detail' or url_name == 'dashboard_bought' or url_name == 'dashboard_bundle_editor' or url_name == 'dashboard_bundle' %}active{% endif %}">
                         <a href="{% url 'dashboard_bundle' %}">
                             <i class="menu-livicon" data-icon="diagram"></i>
                             <span class="menu-title" data-i18n="Bundel">Bundel</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'dashboard_topup_detail' or request.resolver_match.url_name == 'dashboard_topup' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'dashboard_topup_detail' or url_name == 'dashboard_topup' %}active{% endif %}">
                         <a href="{% url 'dashboard_topup' %}">
                             <i class="menu-livicon" data-icon="coins"></i>
                             <span class="menu-title" data-i18n="Topup">Topup</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'cms_banner_editor' or request.resolver_match.url_name == 'cms_banner' or request.resolver_match.url_name == 'cms_banner' or request.resolver_match.url_name == 'cms_video' or request.resolver_match.url_name == 'cms_home' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'cms_banner_editor' or url_name == 'cms_banner' or url_name == 'cms_banner' or url_name == 'cms_video' or url_name == 'cms_home' %}active{% endif %}">
                         <a href="{% url 'cms_home' %}">
                             <i class="menu-livicon" data-icon="gears"></i>
                             <span class="menu-title" data-i18n="CMS">CMS</span>
                         </a>
                     </li>
                 {% else %}
-                    <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'home' %}active{% endif %}">
                         <a href="{% url 'home' %}">
                             <i class="menu-livicon" data-icon="home"></i>
                             <span class="menu-title" data-i18n="Beranda">Beranda</span>
@@ -172,35 +172,35 @@
                     </li>
 
                     <li class="nav-item
-                        {% if request.resolver_match.url_name == 'bought_proof' or request.resolver_match.url_name == 'simulation_ranking' or request.resolver_match.url_name == 'bundle_list_enrolled' or request.resolver_match.url_name == 'bundle_list' or request.resolver_match.url_name == 'bundle_detail' or request.resolver_match.url_name == 'packet_detail' or request.resolver_match.url_name == 'simulation_detail' or request.resolver_match.url_name == 'simulation_result' %}active{% endif %}">
+                        {% if url_name == 'bought_proof' or url_name == 'simulation_ranking' or url_name == 'bundle_list_enrolled' or url_name == 'bundle_list' or url_name == 'bundle_detail' or url_name == 'packet_detail' or url_name == 'simulation_detail' or url_name == 'simulation_result' %}active{% endif %}">
                         <a href="{% url 'bundle_list' %}">
                             <i class="menu-livicon" data-icon="bulb"></i>
                             <span class="menu-title" data-i18n="Try Out">Try Out</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'payment_topup' or request.resolver_match.url_name == 'payment_coin' or request.resolver_match.url_name == 'payment' or request.resolver_match.url_name == 'topup_detail' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'payment_topup' or url_name == 'payment_coin' or url_name == 'payment' or url_name == 'topup_detail' %}active{% endif %}">
                         <a href="{% url 'payment' %}">
                             <i class="menu-livicon" data-icon="coins"></i>
                             <span class="menu-title" data-i18n="Todo">Koin & Topup</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'points' or request.resolver_match.url_name == 'points_list' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'points' or url_name == 'points_list' %}active{% endif %}">
                         <a href="{% url 'points' %}">
                             <i class="menu-livicon" data-icon="gift"></i>
                             <span class="menu-title" data-i18n="My Points">My Points</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'voucher_redeem_list' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'voucher_redeem_list' %}active{% endif %}">
                         <a href="{% url 'voucher_redeem_list' %}">
                             <i class="menu-livicon" data-icon="grid"></i>
                             <span class="menu-title" data-i18n="Voucher">Voucher</span>
                         </a>
                     </li>
 
-                    <li class="nav-item {% if request.resolver_match.url_name == 'affiliate_commission' or request.resolver_match.url_name == 'affiliate_list' or request.resolver_match.url_name == 'affiliate' %}active{% endif %}">
+                    <li class="nav-item {% if url_name == 'affiliate_commission' or url_name == 'affiliate_list' or url_name == 'affiliate' %}active{% endif %}">
                         <a href="{% url 'affiliate' %}">
                             <i class="menu-livicon" data-icon="diagram"></i>
                             <span class="menu-title" data-i18n="Affiliate">Affiliate</span>

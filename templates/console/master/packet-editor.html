@@ -38,6 +38,7 @@
 {% block js %}
     <script src="{% static 'app-assets/vendors/js/pickers/daterange/moment.min.js' %}"></script>
     <script src="{% static 'app-assets/vendors/js/pickers/daterange/daterangepicker.js' %}"></script>
+    <script src="{% static 'assets/ckeditor/ckeditor.js' %}"></script>
 
     <script type="text/javascript">
         // Date & Time
@@ -50,6 +51,34 @@
             locale: {
                 format: 'YYYY-MM-DD HH:mm:ss'
             }
+        });
+
+        var editorList = ['id_description'];
+        $.each(editorList, function(index, value) {
+            ClassicEditor
+                .create( document.querySelector( '#' + value ), {
+                    toolbar: [
+                        'bold', 'italic', 'bulletedList', 'numberedList', 'blockQuote',
+                        'imageUpload', 'mediaEmbed', '|', 'MathType', 'ChemType'
+                    ],
+                    simpleUpload: {
+                        // The URL that the images are uploaded to.
+                        uploadUrl: '/api/tryout/attachments/',
+
+                        // Headers sent along with the XMLHttpRequest to the upload server.
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                        },
+
+                        // More data
+                        params: {
+                            'content_type': "{{ queryset.id }}",
+                        }
+                    }
+                } )
+                .catch( error => {
+                    console.log( error );
+                } );
         });
     </script>
 {% endblock %}

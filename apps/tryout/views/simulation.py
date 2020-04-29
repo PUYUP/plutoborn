@@ -58,7 +58,10 @@ class SimulationExamView(LoginRequiredMixin, View):
 
         # Prepare countdown
         if simulation.start_date:
-            countdown = simulation.start_date + timezone.timedelta(minutes=simulation.duration_half)
+            if simulation.duration_half:
+                countdown = simulation.start_date + timezone.timedelta(minutes=simulation.duration_half)
+            else:
+                countdown = simulation.start_date
 
         # Set to done if countdown larger than time now
         if not simulation.is_done and countdown <= timezone.now():

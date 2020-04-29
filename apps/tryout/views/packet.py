@@ -110,7 +110,7 @@ class PacketDetailView(LoginRequiredMixin, View):
 
             # save password
             BundlePasswordPassed.objects.create(user=user, bundle=bundle, password=password)
-            return redirect(reverse('packet_detail', kwargs={'packet_uuid': packet.uuid}))
+            return redirect(reverse('packet_detail', args=[packet_uuid]))
 
         self.context['form'] = form
         self.context['HOLD'] = HOLD

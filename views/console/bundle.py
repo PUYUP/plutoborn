@@ -76,9 +76,10 @@ class BundleEditorView(LoginRequiredMixin, View):
         except ObjectDoesNotExist:
             queryset = None
 
-        form = self.form(request.POST)
         if queryset:
             form = self.form(request.POST, instance=queryset)
+        else:
+            form = self.form(request.POST)
 
         if form.is_valid():
             fm = form.save(commit=False)

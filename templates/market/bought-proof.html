@@ -30,7 +30,7 @@
                             {% if item.document_image %}
                                 <div class="item-gallery">
                                     <figure class="d-block">
-                                        <img src="{% get_media_prefix %}{{ item.document_image }}" class="w-auto h-auto">
+                                        <img src="{% get_media_prefix %}{{ item.document_image }}" class="w-auto h-auto" style="max-width: 300px;">
                                     </figure>
                                 </div>
                             {% endif %}

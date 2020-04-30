@@ -12,9 +12,13 @@
             <input id="fileupload" type="file" name="value_image" class="d-none" accept="image/x-png,image/jpeg,image/jpg">
 
             {% if bought.status == ACCEPT %}
-                <div class="alert alert-success mb-1">Selamat, Try Out Anda sudah aktif!</div>
+                <div class="alert alert-success mb-1">Selamat, Try Out sudah aktif! Lihat paket Anda <strong>Try Out > Paket Saya</strong></div>
             {% else %}
-                <div class="alert alert-light mb-1">Lengkapi bukti dibawah ini. Admin akan segera mengaktifkan Try Out pilihan Anda.</div>
+                {% if document_count and document_count == proof_requirements.count %}
+                    <div class="alert alert-info mb-1">Bukti sudah lengkap. Admin sedang memverifikasi. Silahkan refresh halaman ini secara berkala.</div>
+                {% else %}
+                    <div class="alert alert-light mb-1">Lengkapi bukti dibawah ini. Admin akan segera mengaktifkan Try Out pilihan Anda.</div>
+                {% endif %}
             {% endif %}
 
             {% for item in proof_requirements %}
@@ -117,7 +121,7 @@
                 // build view
                 var preview = `<div class="item-gallery">
                     <figure class="d-block">
-                        <img src="${data.result.value_image_url}" class="w-auto h-auto">
+                        <img src="${data.result.value_image_url}" class="w-auto h-auto" style="max-width: 300px;">
                     </figure>
                 </div>`;
 

@@ -1,5 +1,8 @@
 from django.views import View
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import (
+    Q, OuterRef, Subquery, Exists, Sum, Case, When, Value,
+    IntegerField, F, Count
+)
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -43,8 +46,17 @@ class BoughtProofView(LoginRequiredMixin, View):
                 document_image=Subquery(proof_document.values('value_image')[:1])
             )
 
+        document_count = proof_requirements \
+            .annotate(
+                is_exist=Exists(proof_document.values('uuid'))
+            ) \
+            .aggregate(
+                total=Count(Value(1), filter=F('is_exist'), output_field=IntegerField())
+            )
+
         self.context['ACCEPT'] = ACCEPT
         self.context['bundle'] = bundle
         self.context['bought'] = bought
         self.context['proof_requirements'] = proof_requirements
+        self.context['document_count'] = document_count['total']
         return render(request, self.template_name, self.context)

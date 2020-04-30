@@ -3,20 +3,20 @@ img {
 }
 
 .ribbon {
-    width: 48%;
+    width: 75px;
 }
 
 .ribbon:nth-child(even) {
-    margin-right: 4%;
+    margin-right: 15px;
 }
 
-.ribbon1 {
+.ribbon {
     position: absolute;
     top: -6.1px;
     right: 10px;
 }
 
-.ribbon1 span {
+.ribbon-content span {
     position: relative;
     display: block;
     text-align: center;
@@ -29,7 +29,7 @@ img {
     color: #fff;
 }
 
-.ribbon1 span:after {
+.ribbon-content span:after {
     height: 6px;
     width: 8px;
     left: -8px;
@@ -38,19 +38,38 @@ img {
     background: #C02031;
 }
 
-.ribbon1 span:before,
-.ribbon1 span:after {
+.ribbon-content span:before,
+.ribbon-content span:after {
     position: absolute;
     content: "";
 }
 
-.ribbon1 span:before {
+.ribbon-content span:before {
     height: 6px;
     width: 6px;
     left: -6px;
     top: 0;
     background: #F8463F;
 }
+
+.ribbon-content.success span,
+.ribbon-content.success span:before {
+    background: rgb(35, 209, 166) !important;
+}
+
+.ribbon-content.success span:after {
+    background: rgb(32, 192, 152) !important;
+}
+
+.ribbon-content.warning span,
+.ribbon-content.warning span:before {
+    background: rgb(196, 177, 5) !important;
+}
+
+.ribbon-content.warning span:after {
+    background: rgb(209, 192, 36) !important;
+}
+
 
 /* EDITOR */
 .ck-content .image.image_resized {

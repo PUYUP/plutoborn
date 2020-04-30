@@ -11,6 +11,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from utils.generals import get_model
 from utils.pagination import Pagination
 from apps.market.utils.constant import PUBLISHED, GENERAL, NATIONAL, ACCEPT
+from apps.tryout.utils.constant import ACTIVE, HOLD
 
 Bundle = get_model('market', 'Bundle')
 Question = get_model('tryout', 'Question')
@@ -73,6 +74,8 @@ class BundleListView(LoginRequiredMixin, View):
 
         pagination = Pagination(request, queryset, queryset_pagination, page_num, paginator)
 
+        self.context['ACTIVE'] = ACTIVE
+        self.context['HOLD'] = HOLD
         self.context['slug'] = slug
         self.context['queryset'] = queryset
         self.context['queryset_pagination'] = queryset_pagination

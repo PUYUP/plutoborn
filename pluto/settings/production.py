@@ -1,7 +1,14 @@
+import sys
+
 from .base import *
 from .project import *
 
-DEBUG = True
+# Determine if in Production or Development
+if (len(sys.argv) >= 2 and sys.argv[1] == 'runserver'):
+    DEBUG = True
+else:
+    DEBUG = False
+
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'pluto-tryout.herokuapp.com']
 
 
@@ -40,7 +47,12 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'pluto-tryout.herokuapp.com'
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
+if DEBUG:
+    STATICFILES_DIRS = (
+        os.path.join(PROJECT_PATH, 'static/'),
+    )
+else:
+    STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')

@@ -2,7 +2,7 @@ import uuid
 import datetime
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
@@ -11,7 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import FileSystemStorage
 
-from utils.generals import FileSystemStorageExtend
+from utils.generals import FileSystemStorageExtend, get_model
 from apps.tryout.utils.constant import (
     CLASSIFICATION, RIGHT_CHOICE, EDUCATION_LEVEL, PACKET_STATUS, DRAFT, ALL, SCORE,
     SCORING_TYPE, TRUE_FALSE_NONE, HOLD, ACQUIRED_STATUS)
@@ -119,6 +119,15 @@ class AbstractPacket(models.Model):
         return self.label
 
     def save(self, *args, **kwargs):
+        # Count total duration!
+        if self.pk and not self.duration:
+            Question = get_model('tryout', 'Question')
+            theories = Question.objects.filter(packet_id=self.pk) \
+                .distinct() \
+                .values('theory', 'theory__duration') \
+                .aggregate(total_duration=Sum('theory__duration'))
+            self.duration = theories['total_duration']
+
         start_date = self.start_date
         duration = self.duration
 

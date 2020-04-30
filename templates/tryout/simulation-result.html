@@ -16,7 +16,7 @@
                                     {% if question.theory %}<span class="badge badge-secondary d-block mb-2">{{ question.theory.label }}</span>{% endif %}
             
                                     <h4 class="d-flex w-100 align-items-start">
-                                        <button type="button" class="btn btn-outline-primary bg-white rounded-0">
+                                        <button type="button" class="btn btn-outline-primary rounded-0">
                                             {{ question.numbering|safe }}
                                         </button>
 
@@ -334,7 +334,7 @@
                             ${question.theory ? '<span class="badge badge-secondary d-block mb-2">' + question.theory_label + '</span>' : ''}
 
                             <h4 class="d-flex w-100 align-items-start">
-                                <button type="button" class="btn btn-outline-primary bg-white rounded-0">${question.numbering}</button>
+                                <button type="button" class="btn btn-outline-primary rounded-0">${question.numbering}</button>
                                 <span class="pl-2">${question.label}</span>
                             </h4>
 

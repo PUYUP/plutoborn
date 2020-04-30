@@ -52,7 +52,7 @@ class AbstractSimulation(models.Model):
 
     def save(self, *args, **kwargs):
         self.packet = self.acquired.packet
-        self.duration_half = self.packet.duration
+        self.duration_half = self.acquired.packet.duration
 
         # strict is_done = False only to one object
         # if current make is_done = True then mark all objects to False

@@ -151,6 +151,13 @@ img {
     border-style: solid;
 }
 
+.simulation .choices ul > li label.bg-info span,
+.answer-result .bg-info span,
+.simulation .choices ul > li label.bg-success span,
+.answer-result .bg-success span {
+    color: #fff;
+}
+
 .simulation .choices p:last-of-type {
     margin-bottom: 0;
 }

@@ -1,3 +1,5 @@
 **/app-assets/*
+/__pycache__
+__pycache__/
 __pycache__
 /NOTED

@@ -31,6 +31,14 @@ class BundleView(LoginRequiredMixin, View):
             .prefetch_related(Prefetch('packet')) \
             .all()
 
+        coin_amount = str(request.session.get('coin_amount', ''))
+        if coin_amount is not None:
+            if coin_amount == '0':
+                bundles = bundles.filter(coin_amount=0)
+
+            if coin_amount > '0':
+                bundles = bundles.filter(coin_amount__gt=0)
+
         # paginator
         page_num = int(self.request.GET.get('p', 0))
         paginator = Paginator(bundles, settings.PAGINATION_PER_PAGE)
@@ -47,7 +55,16 @@ class BundleView(LoginRequiredMixin, View):
         self.context['bundles'] = bundles
         self.context['bundles_pagination'] = bundles_pagination
         self.context['pagination'] = pagination
-        return render(request, self.template_name, self.context)
+        self.context['coin_amount'] = coin_amount
+        return render(request, self.template_name, self.context)  
+
+    @transaction.atomic
+    def post(self, request):
+        coin_amount = request.POST.get('coin_amount', None)
+
+        # save temporary filter
+        request.session['coin_amount'] = coin_amount
+        return redirect(reverse('dashboard_bundle'))
 
 
 class BundleEditorView(LoginRequiredMixin, View):
@@ -128,6 +145,14 @@ class BoughtView(LoginRequiredMixin, View):
             .select_related('user', 'bundle') \
             .all()
 
+        status = str(request.session.get('status', ''))
+        if status is not None:
+            if status == 'hold':
+                boughts = boughts.filter(status='hold')
+
+            if status == 'accept':
+                boughts = boughts.filter(status='accept')
+
         # paginator
         page_num = int(self.request.GET.get('p', 0))
         paginator = Paginator(boughts, settings.PAGINATION_PER_PAGE)
@@ -144,7 +169,16 @@ class BoughtView(LoginRequiredMixin, View):
         self.context['boughts'] = boughts
         self.context['boughts_pagination'] = boughts_pagination
         self.context['pagination'] = pagination
+        self.context['status'] = status
         return render(request, self.template_name, self.context)
+
+    @transaction.atomic
+    def post(self, request):
+        status = request.POST.get('status', None)
+
+        # save temporary filter
+        request.session['status'] = status
+        return redirect(reverse('dashboard_bought'))
 
 
 class BoughtDetailView(LoginRequiredMixin, View):

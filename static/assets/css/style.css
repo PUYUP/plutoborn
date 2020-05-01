@@ -141,8 +141,9 @@ img {
     cursor: pointer;
 }
 
-.simulation .choices ul > li:hover {
+.simulation .choices ul > li:hover label {
     background-color: #ffa;
+    color: #555;
 }
 
 .simulation .choices ul > li + li {
@@ -154,6 +155,8 @@ img {
     font-weight: normal;
     font-size: 1rem;
     cursor: pointer;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
 }
 
 .simulation .choices ul > li label.bg-info,
@@ -173,7 +176,8 @@ img {
 .simulation .choices ul > li label.bg-info span,
 .answer-result .bg-info span,
 .simulation .choices ul > li label.bg-success span,
-.answer-result .bg-success span {
+.answer-result .bg-success span,
+.simulation .choices p {
     color: #fff;
 }
 
@@ -191,4 +195,18 @@ img {
 
 .bundle .meta > p + p {
     margin-top: 5px;
+}
+
+
+/***
+ * Menu
+ */
+.main-menu .navbar-header .navbar-brand .brand-logo {
+    height: 35px;
+    width: auto;
+    margin-left: 0;
+}
+
+.main-menu .navbar-header .navbar-brand .brand-logo .logo {
+    height: 35px;
 }

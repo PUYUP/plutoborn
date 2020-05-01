@@ -2,11 +2,16 @@
 {% load static humanize listing %}
 {% load mathfilters %}
 {% block head_title %}Peringkat {{ packet.label|safe }}{% endblock %}
-{% block content_title %}<span class="text-dark text-uppercase font-weight-bolder">Rangkuman Peringkat</span>: {{ packet.label|safe }}{% endblock %}
+{% block content_title %}
+    <span class="text-dark text-uppercase font-weight-bolder">Rangkuman Peringkat</span>: 
+    <a href="{% url 'simulation_result' simulation.uuid %}" class="font-weight-bolder">{{ packet.label|safe }}</a>
+{% endblock %}
 
 {% block content %}
     <section class="simulation">
-        <div class="card">
+        <a href="{% url 'simulation_result' simulation.uuid %}" class="btn btn-sm btn-primary">Kembali</a>
+
+        <div class="card mt-1">
             <div class="card-body">
                 <form action="{% url 'simulation_ranking' simulation.uuid %}" method="post">
                     {% csrf_token %}
@@ -15,7 +20,7 @@
                         <div class="col-4 col-sm-4 col-md-3 col-lg-2">
                             <div class="form-group mb-0">
                                 <label for="chance">Simulai Ke?</label>
-                                <select name="chance" class="form-control w-100 rounded-0">
+                                <select name="chance" class="form-control w-100 rounded-0x">
                                     {% for i in "x"|rjust:simulation_count %}
                                         <option value="{{ forloop.counter }}" {% if forloop.counter == simulation_change %}selected{% endif %}>{{ forloop.counter }}</option>
                                     {% endfor %}
@@ -26,7 +31,7 @@
                         <div class="col-8 col-sm-8 col-md-5 col-lg-4">
                             <div class="form-group mb-0">
                                 <label for="chance">Materi</label>
-                                <select name="theory" class="form-control w-100 rounded-0">
+                                <select name="theory" class="form-control w-100 rounded-0x">
                                     <option value="0">Semua Materi</option>
                                     {% for item in theories %}
                                         <option value="{{ item.theory }}" {% if ranking_theory == item.theory__pk %}selected{% endif %}>{{ item.theory__label }}</option>
@@ -37,7 +42,7 @@
 
                         <div class="col-12 col-sm-12 col-md-3 col-lg-2">
                             <label for="chance">&nbsp;</label>
-                            <button type="submit" class="btn btn-warning btn-block rounded-0">Saring</button>
+                            <button type="submit" class="btn btn-warning btn-block rounded-0x">Saring</button>
                         </div> <!-- /.col -->
                     </div>
                 </form>

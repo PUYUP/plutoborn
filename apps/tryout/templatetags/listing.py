@@ -35,11 +35,11 @@ def paginator_number(cl, i):
     """
     Generate an individual page index link in a paginated list.
     """
-    link_class = mark_safe(' class="page-link end rounded-0"' if i == cl.paginator.num_pages - 1 else 'class="page-link rounded-0"')
+    link_class = mark_safe(' class="page-link end rounded-0x"' if i == cl.paginator.num_pages - 1 else 'class="page-link rounded-0x"')
     page_var = get_query_string(cl, {PAGE_VAR: i})
 
     if i == DOT:
-        return format_html('<li class="page-item disabled"><span class="page-link rounded-0">...</span></li>')
+        return format_html('<li class="page-item disabled"><span class="page-link rounded-0x">...</span></li>')
     elif i == cl.page_num:
         return format_html(
             '<li class="page-item active"><a href="{}"{}>{}</a></li>',

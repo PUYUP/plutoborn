@@ -1,3 +1,5 @@
+import sys
+
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
@@ -74,6 +76,14 @@ class BoughtProofDocumentSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'write_only': True}
         }
+
+    def validate(self, data):
+        if data['value_image']:
+            img_size = data['value_image'].size / 1000
+            if img_size > 5000:
+                raise serializers.ValidationError(_("Max allowed is 5MB each."))
+
+            return data
 
     def create(self, validated_data):
         try:

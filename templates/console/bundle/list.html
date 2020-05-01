@@ -20,8 +20,30 @@
 
     <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-8 col-12">
-            <div class="d-block text-right">
-                <a href="{% url 'dashboard_bundle_editor' %}" class="btn btn-success">Tambah</a>
+            <div class="d-flex w-100">
+                <form action="{% url 'dashboard_bundle' %}" method="post" class="mr-auto w-100">
+                    {% csrf_token %}
+
+                    <div class="d-flex mb-2">
+                        <div class="pr-2">
+                            <div class="form-group mb-0">
+                                <select name="coin_amount" class="form-control w-100 rounded-0x">
+                                    <option value="" {% if not coin_amount %}selected{% endif %}>All</option>
+                                    <option value="0" {% if coin_amount == '0' %}selected{% endif %}>Gratis</option>
+                                    <option value="1" {% if coin_amount == '1' %}selected{% endif %}>Premium</option>
+                                </select>
+                            </div>
+                        </div> <!-- /.col -->
+
+                        <div>
+                            <button type="submit" class="btn btn-warning btn-block rounded-0x">Saring</button>
+                        </div> <!-- /.col -->
+                    </div>
+                </form>
+
+                <div>
+                    <a href="{% url 'dashboard_bundle_editor' %}" class="btn btn-success">Tambah</a>
+                </div>
             </div>
 
             {% if messages %}

@@ -17,7 +17,7 @@
 
                                     <div id="question-item-{{ question.id }}">
                                         <h4 class="d-flex w-100 align-items-start">
-                                            <button type="button" class="btn btn-outline-primary rounded-0">
+                                            <button type="button" class="btn btn-outline-primary rounded-0x">
                                                 {{ question.numbering|safe }}
                                             </button>
 
@@ -47,18 +47,18 @@
                                 </div>
         
                                 <div class="actions d-flex w-100 justify-content-between mt-1 pt-1">
-                                    <button type="button" id="prev-question" class="btn btn-icon btn-outline-primary" data-uuid="{{ prev_question.uuid }}">
+                                    <button type="button" id="prev-question" class="btn btn-icon btn-primary pl-3 pr-3" data-uuid="{{ prev_question.uuid }}">
                                         <i class="bx bx-left-arrow-alt"></i>
                                     </button>
 
                                     {% if not simulation.is_done %}
-                                        <button type="button" id="doubt" class="btn btn-outline-warning text-uppercase"
+                                        <button type="button" id="doubt" class="btn btn-warning text-uppercase pl-3 pr-3"
                                             data-question-id="{{ question.id }}">
                                             Ragu
                                         </button>
                                     {% endif %}
 
-                                    <button type="button" id="next-question" class="btn btn-icon btn-outline-primary" data-uuid="{{ next_question.uuid }}">
+                                    <button type="button" id="next-question" class="btn btn-icon btn-primary pl-3 pr-3" data-uuid="{{ next_question.uuid }}">
                                         <i class="bx bx-right-arrow-alt"></i>
                                     </button>
                                 </div> <!-- /.actions -->
@@ -68,44 +68,46 @@
                 </div> <!-- /.col-lg-8 -->
 
                 <div class="col-12 col-sm-12 col-md-12 col-lg-4 order-1 order-sm-1 order-md-1 order-lg-2 order-xl-2">
-                    <div class="timer mb-1 font-weight-bold">
-                        <span class="d-block font-weight-bold">Sisa Waktu</span>
+                    <div id="sidebar" class="simulation-tool">
+                        <div class="timer mb-1 font-weight-bold">
+                            <span class="d-block font-weight-bold">Sisa Waktu</span>
 
-                        {% if simulation.is_done %}
-                            <div class="text-danger text-uppercase font-weight-bold">Waktu Telah Habis</div>
-                        {% else %}
-                            <div id="countdown" class="d-flex justify-content-between"></div>
-                        
-                            <button type="button" id="mark-done" data-simulation-uuid="{{ simulation.uuid }}"
-                                class="btn btn-block btn-lg btn-primary rounded-0 mt-1 text-uppercase">
-                                Kumpulkan
-                            </button>
-                        {% endif %}
-                    </div>
+                            {% if simulation.is_done %}
+                                <div class="text-danger text-uppercase font-weight-bold">Waktu Telah Habis</div>
+                            {% else %}
+                                <div id="countdown" class="d-flex justify-content-between"></div>
+                            
+                                <button type="button" id="mark-done" data-simulation-uuid="{{ simulation.uuid }}"
+                                    class="btn btn-block btn-lg btn-primary rounded-0x mt-1 text-uppercase">
+                                    Kumpulkan
+                                </button>
+                            {% endif %}
+                        </div>
 
-                    <hr />
+                        <hr />
 
-                    <div class="numbering">
-                        <span class="d-block font-weight-bold mb-1">Nomor Soal</span>
-                        <ul class="list-unstyled d-flex w-100 flex-wrap">
-                            {% for item in questions %}
-                                <li id="question-numbering-{{ item.id }}" class="pr-1 pb-1">
-                                    <button type="button" id="get-question" class="rounded-0 pl-0 pr-0 btn 
-                                        {% if item.answer_id %}
-                                            {% if item.choice_id %}
-                                                btn-primary
+                        <div class="numbering">
+                            <span class="d-block font-weight-bold mb-1">Nomor Soal</span>
+                            <ul class="list-unstyled d-flex w-100 flex-wrap">
+                                {% for item in questions %}
+                                    <li id="question-numbering-{{ item.id }}" class="pr-1 pb-1">
+                                        <button type="button" id="get-question" class="rounded-0x pl-0 pr-0 btn 
+                                            {% if item.answer_id %}
+                                                {% if item.choice_id %}
+                                                    btn-primary
+                                                {% else %}
+                                                    btn-warning
+                                                {% endif %}
                                             {% else %}
-                                                btn-warning
-                                            {% endif %}
-                                        {% else %}
-                                            btn-dark
-                                        {% endif %}" data-uuid="{{ item.uuid }}">
+                                                btn-dark
+                                            {% endif %}" data-uuid="{{ item.uuid }}">
 
-                                        {{ item.numbering|safe }}
-                                    </button>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                                            {{ item.numbering|safe }}
+                                        </button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div> <!-- /.row -->
@@ -312,7 +314,7 @@
                             ${response.theory ? '<span class="badge badge-secondary d-block mb-2">' + response.theory_label + '</span>' : ''}
                     
                             <h4 class="d-flex w-100 align-items-start">
-                                <button type="button" class="btn btn-outline-primary rounded-0">${response.numbering}</button>
+                                <button type="button" class="btn btn-outline-primary rounded-0x">${response.numbering}</button>
                                 <span class="pl-2">${response.label}</span>
                             </h4>
 
@@ -349,5 +351,36 @@
         }
 
         showoEmbed();
+
+
+        // ...
+        // STICKY
+        // ...
+        $(document).ready(function(){
+            var window_width = $( window ).width();
+
+            if (window_width < 992) {
+                $("#sidebar").trigger("sticky_kit:detach");
+            } else {
+                make_sticky();
+            }
+
+            $( window ).resize(function() {
+                window_width = $( window ).width();
+
+                if (window_width < 992) {
+                    $("#sidebar").trigger("sticky_kit:detach");
+                } else {
+                    make_sticky();
+                }
+            });
+
+            function make_sticky() {
+                $("#sidebar").stick_in_parent({
+                    parent: '.col-12',
+                    offset_top: 90
+                });
+            }
+        });
     </script>
 {% endblock %}

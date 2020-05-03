@@ -68,6 +68,7 @@ class SimulationExamView(LoginRequiredMixin, View):
             simulation.is_done = True
             simulation.save()
             simulation.refresh_from_db()
+            return redirect(reverse('simulation_result', kwargs={'simulation_uuid': simulation.uuid}))
 
         question = questions.first()
         choices = question.choices \

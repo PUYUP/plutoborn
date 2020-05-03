@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static listing %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}Ranking{% endblock %}
+{% block content_title %}Ranking{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+            <div class="card mt-1">
+                <div class="card-content">
+                    <table class="table-sm-del table">
+                        <thead>
+                            <tr>
+                                <th>Try Out</th>
+                                <th class="w-25">Aksi</th>
+                            </tr>
+                        </thead>
+
+                        {% for item in acquireds_pagination %}
+                            <tr>
+                                <td>{{ item.packet.label }}</td>
+                                <td>
+                                   <a href="{% url 'simulation_ranking' item.simulation_uuid %}" class="btn btn-warning btn-sm rounded-0x btn-block">
+                                        Lihat Ranking
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+
+            {% if acquireds_pagination.has_other_pages %}
+                <div class="d-block w-100 mt-2">
+                    {% pagination pagination %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

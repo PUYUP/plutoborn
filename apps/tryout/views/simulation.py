@@ -465,3 +465,42 @@ class SimulationRankingView(LoginRequiredMixin, View):
         request.session['simulation_change'] = chance
         request.session['ranking_theory'] = theory
         return redirect(reverse('simulation_ranking', kwargs={'simulation_uuid': simulation_uuid}))
+
+
+class RankingListView(View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    template_name = 'tryout/simulation-ranking-list.html'
+    context = dict()
+
+    def get(self, request):
+        user = request.user
+
+        simulation = Simulation.objects \
+            .filter(acquired_id=OuterRef('id'), chance=1) \
+            .order_by('chance')
+
+        acquireds = user.acquireds \
+            .annotate(
+                simulation_uuid=Subquery(simulation.values('uuid')[:1])
+            ) \
+            .filter(simulations__isnull=False)
+
+        # paginator
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(acquireds, settings.PAGINATION_PER_PAGE)
+
+        try:
+            acquireds_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            acquireds_pagination = paginator.page(1)
+        except EmptyPage:
+            acquireds_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, acquireds, acquireds_pagination, page_num, paginator)
+
+        self.context['acquireds'] = acquireds
+        self.context['acquireds_pagination'] = acquireds_pagination
+        self.context['pagination'] = pagination
+        return render(request, self.template_name, self.context)

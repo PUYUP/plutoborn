@@ -205,6 +205,8 @@ img {
     height: 35px;
     width: auto;
     margin-left: 0;
+    padding-left: 35px;
+    float: none;
 }
 
 .main-menu .navbar-header .navbar-brand .brand-logo .logo {

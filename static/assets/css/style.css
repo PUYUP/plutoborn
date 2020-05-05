@@ -212,3 +212,8 @@ img {
 .main-menu .navbar-header .navbar-brand .brand-logo .logo {
     height: 35px;
 }
+
+.horizontal-menu .header-navbar.navbar-brand-center .navbar-header .navbar-brand .brand-logo {
+    height: 30px;
+    width: auto;
+}

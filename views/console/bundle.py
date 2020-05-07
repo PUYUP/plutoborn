@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.views import View
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, OuterRef, Subquery
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,6 +9,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse
+
+# Google Drive
+from gdstorage.storage import GoogleDriveStorage
 
 from utils.generals import get_model
 from utils.pagination import Pagination
@@ -17,6 +21,10 @@ from views.console.forms import BundleForm
 
 Bundle = get_model('market', 'Bundle')
 Bought = get_model('market', 'Bought')
+BoughtProofRequirement = get_model('market', 'BoughtProofRequirement')
+BoughtProof = get_model('market', 'BoughtProof')
+BoughtProofDocument = get_model('market', 'BoughtProofDocument')
+gd_storage = GoogleDriveStorage()
 
 
 class BundleView(LoginRequiredMixin, View):
@@ -140,10 +148,40 @@ class BoughtView(LoginRequiredMixin, View):
     context = dict()
 
     def get(self, request):
+        proof_reqs= BoughtProofRequirement.objects.all()
+        proof_reqs_id = proof_reqs.values_list('id', flat=True)
+        xos = dict()
+
+        for item in proof_reqs:
+            d = Subquery(
+                    BoughtProofDocument.objects \
+                    .filter(
+                        bought_proof__bought__id=OuterRef('id'),
+                        bought_proof_requirement__id=item.id) \
+                    .values('value_image')[:1]
+            )
+
+            xos.update(**{'doc_%s' % item.id: d})
+
         boughts = Bought.objects \
             .prefetch_related(Prefetch('user'), Prefetch('bundle')) \
             .select_related('user', 'bundle') \
+            .annotate(**xos) \
             .all()
+
+        for item in boughts:
+            docs = list()
+            for p in proof_reqs_id:
+                doc = 'doc_%s' % p
+                doc_file = getattr(item, doc, None)
+                if doc_file:
+                    file_data = gd_storage._check_file_exists(doc_file)
+                    x = {
+                        'view_url': file_data['webViewLink'] if file_data else '',
+                        'thumb_url': file_data['thumbnailLink'] if file_data else '',
+                    }
+                    docs.append(x)
+            item.proofs = docs 
 
         status = str(request.session.get('status', ''))
         if status is not None:
@@ -154,8 +192,9 @@ class BoughtView(LoginRequiredMixin, View):
                 boughts = boughts.filter(status='accept')
 
         # paginator
+        item_per_page = int(request.session.get('item_per_page', settings.PAGINATION_PER_PAGE))
         page_num = int(self.request.GET.get('p', 0))
-        paginator = Paginator(boughts, settings.PAGINATION_PER_PAGE)
+        paginator = Paginator(boughts, item_per_page)
 
         try:
             boughts_pagination = paginator.page(page_num + 1)
@@ -170,15 +209,36 @@ class BoughtView(LoginRequiredMixin, View):
         self.context['boughts_pagination'] = boughts_pagination
         self.context['pagination'] = pagination
         self.context['status'] = status
+        self.context['item_per_page'] = item_per_page
         return render(request, self.template_name, self.context)
 
     @transaction.atomic
     def post(self, request):
-        status = request.POST.get('status', None)
+        if request.is_ajax():
+            id = request.POST.get('id')
+            status = True
+    
+            try:
+                bought = Bought.objects.get(id=id)
+            except ObjectDoesNotExist:
+                status = False
 
-        # save temporary filter
-        request.session['status'] = status
-        return redirect(reverse('dashboard_bought'))
+            if not request.user.is_staff:
+                status = False
+
+            if status:
+                bought.status = ACCEPT
+                bought.save()
+
+            return JsonResponse({'id': id, 'status': status})
+        else:
+            status = request.POST.get('status', None)
+            item_per_page = request.POST.get('item-per-page', settings.PAGINATION_PER_PAGE)
+
+            # save temporary filter
+            request.session['status'] = status
+            request.session['item_per_page'] = item_per_page
+            return redirect(reverse('dashboard_bought'))
 
 
 class BoughtDetailView(LoginRequiredMixin, View):
@@ -193,6 +253,19 @@ class BoughtDetailView(LoginRequiredMixin, View):
             bought = Bought.objects.get(id=pk)
         except ObjectDoesNotExist:
             return redirect(reverse('dashboard_bought'))
+
+        """
+        proof_docs = bought.bought_proof.bought_proof_documents.all()
+        for item in proof_docs:
+            if item.value_image:
+                fname = item.value_image.name
+                file_data = gd_storage._check_file_exists(fname)
+                x = {
+                    'view_url': file_data['webViewLink'] if file_data else '',
+                    'thumb_url': file_data['thumbnailLink'] if file_data else '',
+                }
+                item.proofs = x
+        """
 
         self.context['HOLD'] = HOLD
         self.context['bought'] = bought

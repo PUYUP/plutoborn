@@ -5,10 +5,15 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
+# Google Drive
+from gdstorage.storage import GoogleDriveStorage
+
 from apps.market.utils.constant import (
     BUNDLE_STATUS, PUBLISHED, SIMULATION_TYPE, GENERAL, HOLD, ACCEPT, BOUGHT_STATUS)
 
 User = get_user_model()
+gd_storage = GoogleDriveStorage()
+gd_storage._get_or_create_folder('moorid')
 
 
 # Create your models here.
@@ -150,8 +155,10 @@ class AbstractBoughtProofDocument(models.Model):
         'market.BoughtProofRequirement', on_delete=models.SET_NULL, null=True,
         related_name='bought_proof_documents')
 
-    value_image = models.ImageField(upload_to=_UPLOAD_TO_IMG, max_length=500, blank=True)
-    value_file = models.FileField(upload_to=_UPLOAD_TO_FILE, max_length=500, blank=True)
+    value_image = models.ImageField(upload_to=_UPLOAD_TO_IMG, storage=gd_storage,
+                                    max_length=500, blank=True)
+    value_file = models.FileField(upload_to=_UPLOAD_TO_FILE, storage=gd_storage,
+                                  max_length=500, blank=True)
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     date_created = models.DateTimeField(auto_now_add=True, null=True)

@@ -19,12 +19,12 @@
     <hr />
 
     <div class="row">
-        <div class="col-sm-12 col-md-12 col-lg-8 col-12">
+        <div class="col-sm-12 col-md-12 col-lg-10 col-xl-8 col-12">
             <form action="{% url 'dashboard_bought' %}" method="post">
                 {% csrf_token %}
 
                 <div class="row mb-2">
-                    <div class="col-4 col-sm-4 col-md-3 col-lg-2">
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-3 col-xl-2">
                         <div class="form-group mb-0">
                             <label for="status">Status</label>
                             <select name="status" class="form-control w-100 rounded-0x">
@@ -32,6 +32,13 @@
                                 <option value="hold" {% if status == 'hold' %}selected{% endif %}>Hold</option>
                                 <option value="accept" {% if status == 'accept' %}selected{% endif %}>Accept</option>
                             </select>
+                        </div>
+                    </div> <!-- /.col -->
+
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-3 col-xl-2">
+                        <div class="form-group mb-0">
+                            <label for="item-per-page">Item per halaman</label>
+                            <input type="number" class="form-control" name="item-per-page" value="{{ item_per_page }}">
                         </div>
                     </div> <!-- /.col -->
 
@@ -44,41 +51,77 @@
 
             <div class="card mt-1">
                 <div class="card-content">
-                    <table class="table-sm-del table">
-                        <thead>
-                            <tr>
-                                <th>Bundel</th>
-                                <th>Pembeli</th>
-                                <th>Status</th>
-                                <th style="width:60px">Aksi</th>
-                            </tr>
-                        </thead>
+                    <div class="table-responsive">
+                        <table class="table-sm-del table">
+                            <thead>
+                                <tr>
+                                    <th>Bundel</th>
+                                    <th>Pembeli</th>
+                                    <th>Status</th>
+                                    <th style="width:60px">Aksi</th>
+                                </tr>
+                            </thead>
 
-                        {% for item in boughts_pagination %}
-                            <tr>
-                                <td>{{ item.bundle.label }}</td>
-                                <td>{{ item.user.username }}</td>
-                                <td>{{ item.get_status_display }}</td>
-                                <td>
-                                    <a href="{% url 'dashboard_bought_detail' item.id %}" class="btn btn-sm btn-primary">Lihat</a>
-                                </td>
-                            </tr>
-                        {% endfor %}
+                            {% for item in boughts_pagination %}
+                                <tr>
+                                    <td>
+                                        {{ item.bundle.label }}
+
+                                        {% if item.proofs %}
+                                            <div class="row mt-1">
+                                                {% for p in item.proofs %}
+                                                    <a href="{{ p.view_url }}" class="col-12 col-xs-12 col-sm-12 col-md-6 mb-1" target="_blank">
+                                                        <img src="{{ p.thumb_url }}" class="w-100 h-auto">
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ item.user.username }}</td>
+                                    <td id="status-label-{{ item.id }}">{{ item.get_status_display }}</td>
+                                    <td>
+                                        <a href="{% url 'dashboard_bought_detail' item.id %}" class="btn btn-sm btn-primary btn-block">Lihat</a>
+
+                                        {% if item.status == 'hold' %}
+                                            <button type="button" id="accept" data-id="{{ item.id }}" class="btn btn-sm btn-warning btn-block mt-1">Acceptt</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
                     </table>
                 </div>
             </div>
-
-            {% if boughts_pagination.has_other_pages %}
-                <div class="d-block w-100 mt-2">
-                    {% pagination pagination %}
-                </div>
-            {% endif %}
         </div>
+
+        {% if boughts_pagination.has_other_pages %}
+            <div class="d-block w-100 mt-2">
+                {% pagination pagination %}
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 
 {% block js %}
     <script type="text/javascript">
+        $(document).on('click', '#accept', function(event) {
+            event.preventDefault();
 
+            var $this = $(this),
+                id = $this.data('id');
+            
+            $.ajax({
+                method: 'POST',
+                data: {id: id},
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                success: function(response) {
+                    if (response.status === true) {
+                        $this.remove();
+                        $('#status-label-' + id).html('Accept');
+                    }
+                }
+            });
+        });
     </script>
 {% endblock %}

@@ -23,6 +23,7 @@ PROJECT_APPS = [
     'apps.payment.apps.PaymentConfig',
     'apps.mypoints.apps.MyPointsConfig',
     'apps.cms.apps.CmsConfig',
+    'gdstorage',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + PROJECT_APPS
@@ -75,6 +76,10 @@ COIN_EXCHANGE = 1
 SITE_NAME = 'Try Out'
 COMMISSION = 2 # in percent
 PAGINATION_PER_PAGE = 25
+
+
+# Google Drive
+GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.path.join(PROJECT_PATH, 'ornate-variety-276505-40aebde52af4.json')
 
 
 # Email Configuration

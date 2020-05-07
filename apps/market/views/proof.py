@@ -8,12 +8,16 @@ from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 
+# Google Drive
+from gdstorage.storage import GoogleDriveStorage
+
 from utils.generals import get_model
 from apps.market.utils.constant import ACCEPT
 
 Bundle = get_model('market', 'Bundle')
 BoughtProofRequirement = get_model('market', 'BoughtProofRequirement')
 BoughtProofDocument = get_model('market', 'BoughtProofDocument')
+gd_storage = GoogleDriveStorage()
 
 
 class BoughtProofView(LoginRequiredMixin, View):
@@ -45,6 +49,11 @@ class BoughtProofView(LoginRequiredMixin, View):
                 document_uuid=Subquery(proof_document.values('uuid')[:1]),
                 document_image=Subquery(proof_document.values('value_image')[:1])
             )
+
+        for item in proof_requirements:
+            file_data = gd_storage._check_file_exists(item.document_image)
+            item.view_url = file_data['webViewLink']
+            item.thumb_url = file_data['thumbnailLink']
 
         document_count = proof_requirements \
             .annotate(

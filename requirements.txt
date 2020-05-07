@@ -15,3 +15,4 @@ django-crispy-forms>=1.9.0
 django-mathfilters>=1.0.0
 xlrd>=1.0.0
 pandas>=1.0.3
+django-googledrive-storage>=1.4.0

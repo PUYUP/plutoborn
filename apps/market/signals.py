@@ -74,6 +74,15 @@ def bought_delete_handler(sender, instance, using, **kwargs):
             acquireds.delete()
 
 
+def bundle_pre_delete_handler(sender, instance, using, **kwargs):
+    packets = instance.packet.all()
+    if packets.exists():
+        packet_ids = packets.values_list('id', flat=True)
+        acquireds = Acquired.objects.filter(packet_id__in=packet_ids)
+        if acquireds:
+            acquireds.delete()
+
+
 def voucher_redeem_handler(sender, instance, created, **kwargs):
     if created:
         coin_amount = instance.voucher.coin_amount

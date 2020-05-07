@@ -51,9 +51,11 @@ class BoughtProofView(LoginRequiredMixin, View):
             )
 
         for item in proof_requirements:
-            file_data = gd_storage._check_file_exists(item.document_image)
-            item.view_url = file_data['webViewLink']
-            item.thumb_url = file_data['thumbnailLink']
+            if item.document_image:
+                file_data = gd_storage._check_file_exists(item.document_image)
+                if file_data:
+                    item.view_url = file_data['webViewLink']
+                    item.thumb_url = file_data['thumbnailLink']
 
         document_count = proof_requirements \
             .annotate(

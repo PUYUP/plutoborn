@@ -15,6 +15,7 @@ BoughtProof = get_model('market', 'BoughtProof')
 def bought_save_handler(sender, instance, created, **kwargs):
     packets = instance.bundle.packet.all()
     packet_ids = packets.values_list('id', flat=True)
+    transaction_type = getattr(instance, 'transaction_type', None)
 
     if created:
         coin_amount = instance.bundle.coin_amount
@@ -28,6 +29,10 @@ def bought_save_handler(sender, instance, created, **kwargs):
                 if coin_amount > 0:
                     acquired_status = ACTIVE
                 else:
+                    acquired_status = HOLD
+
+                # if user choice get free, set to HOLD
+                if transaction_type and transaction_type == 'free':
                     acquired_status = HOLD
 
                 obj = Acquired(user=instance.user, packet=item, status=acquired_status)

@@ -28,7 +28,10 @@ class AbstractBundle(models.Model):
 
     label = models.CharField(max_length=500)
     description = models.TextField(blank=True)
-    coin_amount = models.BigIntegerField(help_text=_("Jika gratis isi dengan nol."))
+    is_free = models.BooleanField(default=False)
+    coin_amount = models.BigIntegerField(help_text=_("Jika gratis isi dengan nol."
+                                                     "Jika is_free dicentang field ini diabaikan."
+                                                     "Berguna jika user tetap ingin beli Bundel free."))
     status = models.CharField(choices=BUNDLE_STATUS, default=PUBLISHED, max_length=255)
     simulation_type = models.CharField(choices=SIMULATION_TYPE, default=GENERAL, max_length=255, null=True)
     password = models.CharField(max_length=255, null=True, blank=True)
@@ -96,7 +99,7 @@ class AbstractBought(models.Model):
         return self.bundle.label
 
     def save(self, *args, **kwargs):
-        if not self.pk and self.bundle.coin_amount == 0:
+        if not self.pk and self.bundle.coin_amount == 0 or self.transaction_type == 'free':
             self.status = HOLD
 
         super().save(*args, **kwargs)

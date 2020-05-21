@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.contrib.auth.models import User
 
 from utils.generals import get_model
@@ -58,6 +58,13 @@ class UserExtend(UserAdmin):
     def telephone(self, obj):
         return obj.account.telephone
     telephone.short_description = _("Telephone")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        queryset = qs \
+            .prefetch_related(Prefetch('account'), Prefetch('profile')) \
+            .select_related('account', 'profile')
+        return queryset
 
 
 class OTPCodeExtend(admin.ModelAdmin):

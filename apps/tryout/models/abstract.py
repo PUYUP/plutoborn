@@ -108,6 +108,10 @@ class AbstractPacket(models.Model):
     education_level = models.CharField(choices=EDUCATION_LEVEL, null=True, blank=True,
                                               verbose_name=_("Jenjang"), default=ALL, max_length=255)
     status = models.CharField(choices=PACKET_STATUS, null=True, default=DRAFT, max_length=255)
+    coin_amount = models.BigIntegerField(help_text=_("Harga dalam Koin. Ini akan berfungsi hanya untuk tindakan Re-buy"
+                                                     "Re-buy adalah tindakan membeli ulang paket"
+                                                     "setelah limit Boleh Mengulang terlampaui."),
+                                         null=True, blank=True)
 
     class Meta:
         abstract = True

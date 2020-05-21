@@ -18,9 +18,9 @@
                 {% if bundle.password and not bundle.is_password_passed %}
                     <span class="ml-auto text-uppercase text-danger font-weight-bolder">Dilindungi Password</span>
                 {% else %}
-                    <button type="button" id="simulate-action" class="btn btn-success btn-sm ml-auto text-uppercase"
+                    <button type="button" id="simulate-action" class="btn btn-primary btn-sm ml-auto text-uppercase"
                         data-acquired-id="{{ packet.acquired_id }}">
-                        <i class="bx bx-task"></i>
+                        <i class="bx bx-task text-white"></i>
                         Kerjakan
                     </button>
                 {% endif %}
@@ -270,26 +270,6 @@
 
 {% block js %}
     <script type="text/javascript">
-        /***
-         * Cookies
-         */
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    
-
         /***
          * Start simulation!
          */

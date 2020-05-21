@@ -30,7 +30,7 @@ class BoughtProofView(LoginRequiredMixin, View):
     def get(self, request, bundle_uuid=None):
         try:
             bundle = Bundle.objects.get(
-                Q(uuid=bundle_uuid), Q(coin_amount__lte=0) | Q(coin_amount__isnull=True))
+                Q(uuid=bundle_uuid), Q(coin_amount__lte=0) | Q(coin_amount__isnull=True) | Q(is_free=True))
         except ObjectDoesNotExist:
             return redirect(reverse('bundle_list'))
 

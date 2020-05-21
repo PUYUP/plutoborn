@@ -11,6 +11,7 @@ from rest_framework.exceptions import NotAcceptable
 from utils.generals import get_model
 from apps.person.utils.auth import CurrentUserDefault
 from apps.payment.utils.constant import IN
+from apps.market.utils.constant import ACCEPT, HOLD
 
 Bought = get_model('market', 'Bought')
 BoughtProofDocument = get_model('market', 'BoughtProofDocument')
@@ -39,6 +40,7 @@ class BoughtSerializer(serializers.ModelSerializer):
         bundle = validated_data.get('bundle', None)
         coin_need = bundle.coin_amount
         coin_amounts = user.account.coin_amounts
+        transaction_type = request.data.get('transaction', None)
 
         if coin_need > coin_amounts['total_active']:
             raise NotAcceptable(_("Koin tidak cukup silahkan topup."))
@@ -61,7 +63,16 @@ class BoughtSerializer(serializers.ModelSerializer):
                 transaction_type=IN, description=description,
                 caused_object_id=bundle.id, caused_content_type=caused_content_type)
 
-        obj, _created = Bought.objects.get_or_create(**validated_data)
+        # set transaction_type to instance
+        # so we can capture it in signal
+        setattr(Bought, 'transaction_type', transaction_type)
+
+        # set status
+        status = ACCEPT
+        if transaction_type and transaction_type == 'free':
+            status = HOLD
+
+        obj, _created = Bought.objects.get_or_create(**validated_data, status=status)
         return obj
 
 

@@ -1,6 +1,10 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+from utils.generals import get_model
+
+Category = get_model('tryout', 'Category')
+
 
 class PasswordProtectForm(forms.Form):
     password = forms.CharField()

@@ -105,6 +105,9 @@ class BundleForm(forms.ModelForm):
         }
 
     def clean(self):
+        """
+        For now ignore this function
+        TODO: maybe some day we need this again
         try:
             self.cleaned_data['packet']
             packets = self.cleaned_data['packet'] \
@@ -115,6 +118,7 @@ class BundleForm(forms.ModelForm):
                 raise forms.ValidationError(_("Paket yang dipilih sudah dimasukkan dalam Bundel lain."))
         except KeyError:
             pass
+        """
 
         return self.cleaned_data
 

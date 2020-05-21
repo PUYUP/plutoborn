@@ -68,7 +68,7 @@
 
                                     <p class="card-text d-flex w-100">
                                         <span class="mr-auto">Tipe Simulasi</span>
-                                        <span>{{ item.x_simulation_type }}</span>
+                                        <span>{{ item.x_simulation_type_label }}</span>
                                     </p>
 
                                     <p class="card-text d-flex w-100">
@@ -76,16 +76,76 @@
                                         <span>{{ item.x_start_date|date:'d-m-Y H:i' }}</span>
                                     </p>
                                 </div>
+                            
+                                <div class="row align-items-center">
+                                    <div class="{% if item.status == ACTIVE %}col-6{% else %}col-12{% endif %}">
+                                        <a href="{% url 'packet_detail' item.packet.uuid %}" class="btn-block btn btn-secondary btn-sm text-uppercase mt-auto">
+                                            <i class="bx bx-notepad"></i>
+                                            Ringkasan
+                                        </a>
+                                    </div>
 
-                                <a href="{% url 'packet_detail' item.packet.uuid %}" class="btn btn-primary btn-sm text-uppercase mt-auto">
-                                    <i class="bx bx-notepad"></i>
-                                    Lihat
-                                </a>
+                                    {% if item.status == ACTIVE %}
+                                        <div class="col-6 text-right">
+                                            {% if item.x_bundle_is_password and not item.x_is_password_passed %}
+                                                <span class="ml-auto text-uppercase text-danger font-weight-bolder small">Ber-password</span>
+                                            {% else %}
+                                                {% if item.x_simulation_type == GENERAL %}
+                                                    <button type="button" id="simulate-action" class="btn btn-primary btn-block btn-sm ml-auto text-uppercase"
+                                                        data-acquired-id="{{ item.id }}">
+                                                        <i class="bx bx-task"></i>
+                                                        Kerjakan
+                                                    </button>
+                                                {% endif %}
+
+                                                {% if item.x_simulation_type == NATIONAL %}
+                                                    <button type="button" data-toggle="modal" data-target="#startSimulation" class="btn btn-primary btn-block btn-sm ml-auto text-uppercase"
+                                                        data-acquired-id="{{ item.id }}">
+                                                        <i class="bx bx-task"></i>
+                                                        Kerjakan
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div> <!-- /.col -->
                 {% endfor %}
             </div> <!-- /.row -->
+        
+             <!-- Modal -->
+            <div class="modal fade" id="startSimulation" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="buyBundleTitle">Beli Paket</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <p>Untuk mengikuti try out ini pilih Jurusan yang diinginkan.</p>
+
+                            {% for item in program_studies %}
+                                <div class="d-block">
+                                    <input type="checkbox" id="program-studies-{{ item.id }}" class="position-relative"
+                                        value="{{ item.id }}" name="program-studies" style="top:2px;">
+                                    <label for="program-studies-{{ item.id }}" class="text-capitalize">{{ item.name }}</label>
+                                </div>
+                            {% endfor %}
+
+                            <button type="button" id="simulate-action" class="mt-2 btn btn-primary btn-block btn-sm ml-auto text-uppercase"
+                                data-acquired-id="{{ item.id }}">
+                                <i class="bx bx-task"></i>
+                                Kerjakan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endif %}
 
         {% if not slug %}
@@ -207,26 +267,6 @@
         var current_coin = +'{{ coin_amounts.total_active }}';
 
         /***
-         * Cookies
-         */
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-
-        /***
          * Prepare modal
          */
         $('#buyBundle').on('show.bs.modal', function(e) {
@@ -284,6 +324,71 @@
                 },
                 error: function(error) {
                     $this.removeAttr('disabled');
+                }
+            });
+        });
+
+
+        $('#startSimulation').on('show.bs.modal', function(e) {
+            var acquired_id = $(e.relatedTarget).data('acquired-id');
+    
+            $(e.currentTarget).find('#simulate-action').attr('data-acquired-id', acquired_id);
+        });
+
+
+        /***
+         * Start simulation!
+         */
+        $(document).on('click', '#simulate-action', function(event) {
+            event.preventDefault();
+
+            var program_studies = [];
+            $.each($("input[name='program-studies']:checked"), function(){
+                program_studies.push($(this).val());
+            });
+
+            var $this = $(this),
+                acquired_id = $this.data('acquired-id'),
+                program_studies = program_studies;
+
+            $.ajax({
+                method: 'POST',
+                url: '/api/tryout/simulations/',
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {
+                    acquired: acquired_id,
+                    program_studies: program_studies,
+                },
+                beforeSend: function(xhr) {
+                    $this.attr('disabled', true);
+                },
+                success: function(response) {
+                    Swal.fire({
+                        type: 'success',
+                        title: 'Tindakan Berhasil',
+                        text: 'Menyiapkan...',
+                        showConfirmButton: false,
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                    });
+
+                    window.location.href = response.url_simulation;
+                },
+                error: function(error) {
+                    $this.removeAttr('disabled');
+
+                    var msg = 'Terjadi kesalahan tidak terduga';
+                    
+                    if (error && error.responseJSON) {
+                        msg = error.responseJSON['detail'];
+                    }
+
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Kesalahan',
+                        html: msg,
+                    });
                 }
             });
         });

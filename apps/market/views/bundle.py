@@ -15,6 +15,7 @@ from apps.tryout.utils.constant import ACTIVE, HOLD
 
 Bundle = get_model('market', 'Bundle')
 Question = get_model('tryout', 'Question')
+ProgramStudy = get_model('tryout', 'ProgramStudy')
 
 
 class BundleListView(LoginRequiredMixin, View):
@@ -49,9 +50,27 @@ class BundleListView(LoginRequiredMixin, View):
                         ouput_field=DateTimeField()
                     ),
                     x_simulation_type=Case(
+                        When(packet__bundle__simulation_type=NATIONAL, then=Value(NATIONAL)),
+                        default=Value(GENERAL),
+                        output_field=CharField()
+                    ),
+                    x_simulation_type_label=Case(
                         When(packet__bundle__simulation_type=NATIONAL, then=Value('Nasional')),
                         default=Value('Umum'),
                         output_field=CharField()
+                    ),
+                    x_bundle_is_password=Case(
+                        When(packet__bundle__password__isnull=False, then=Value(True)),
+                        default=Value(False),
+                        output_field=BooleanField()
+                    ),
+                    x_is_password_passed=Case(
+                        When(
+                            Q(packet__bundle__bundle_passwords__isnull=False) & Q(packet__bundle__bundle_passwords__user_id=user.id),
+                            then=Value(True)
+                        ),
+                        default=Value(False),
+                        output_field=BooleanField()
                     )
                 ).order_by('-date_created')
         else:
@@ -76,11 +95,14 @@ class BundleListView(LoginRequiredMixin, View):
 
         self.context['ACTIVE'] = ACTIVE
         self.context['HOLD'] = HOLD
+        self.context['GENERAL'] = GENERAL
+        self.context['NATIONAL'] = NATIONAL
         self.context['slug'] = slug
         self.context['queryset'] = queryset
         self.context['queryset_pagination'] = queryset_pagination
         self.context['pagination'] = pagination
         self.context['coin_amounts'] = coin_amounts
+        self.context['program_studies'] = ProgramStudy.objects.all()
         return render(request, self.template_name, self.context)
 
 

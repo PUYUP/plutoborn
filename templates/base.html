@@ -229,6 +229,13 @@
                             <span class="menu-title" data-i18n="Ranking">Ranking</span>
                         </a>
                     </li>
+
+                    <li class="nav-item {% if url_name == 'statistic' %}active{% endif %}">
+                        <a class="nav-link" href="{% url 'statistic' %}">
+                            <i class="menu-livicon" data-icon="bar-chart"></i>
+                            <span class="menu-title" data-i18n="Statistik">Statistik</span>
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
         </div>

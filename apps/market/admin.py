@@ -68,11 +68,23 @@ class BoughtExtend(admin.ModelAdmin):
         return queryset
 
 
+class VoucherExtend(admin.ModelAdmin):
+    model = Voucher
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'creator':
+            # setting the user from the request object
+            kwargs['initial'] = request.user.id
+            # making the field readonly
+            kwargs['disabled'] = True
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 # Register your models here.
 admin.site.register(Bundle, BundleExtend)
 admin.site.register(BundlePasswordPassed)
 admin.site.register(Bought, BoughtExtend)
-admin.site.register(Voucher)
+admin.site.register(Voucher, VoucherExtend)
 admin.site.register(VoucherRedeem)
 admin.site.register(Affiliate)
 admin.site.register(AffiliateAcquired)

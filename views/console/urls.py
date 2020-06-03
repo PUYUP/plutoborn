@@ -16,6 +16,8 @@ from views.console.cms.views import (
     CMSView, CMSBannerView, CMSBannerEditorView, CMSBannerDeleteView,
     CMSVideoView, CMSVideoEditorView, CMSVideoDeleteView)
 
+from views.console.monitor import UserMonitorView
+
 urlpatterns = [
     path('', DashboardView.as_view(), name='dashboard'),
 
@@ -63,4 +65,6 @@ urlpatterns = [
     path('cms/video/editor/', CMSVideoEditorView.as_view(), name='cms_video_editor'),
     path('cms/video/<int:pk>/editor/', CMSVideoEditorView.as_view(), name='cms_video_editor'),
     path('cms/video/<int:pk>/delete/', CMSVideoDeleteView.as_view(), name='cms_video_delete'),
+
+    path('monitor/user/', UserMonitorView.as_view(), name='monitor_user'),
 ]

@@ -11,6 +11,9 @@ from apps.market.views import urls as market_urls
 from apps.tryout.views import urls as tryout_urls
 from apps.mypoints.views import urls as mypoints_urls
 
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
     path('', include(public_urls)),
     path('', include(person_urls)),
@@ -18,6 +21,7 @@ urlpatterns = [
     path('', include(market_urls)),
     path('', include(tryout_urls)),
     path('', include(mypoints_urls)),
+    path('sentry-debug/', trigger_error),
     path('api/', include(api_routers)),
     path('admin/', admin.site.urls),
 ]

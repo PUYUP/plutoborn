@@ -129,6 +129,9 @@ class SimulationResultView(LoginRequiredMixin, View):
                 )
             ).distinct().order_by('numbering')
 
+        if not questions.exists():
+            return redirect(reverse('bundle_list'))
+
         question = questions.first()
         choices = question.choices \
             .annotate(

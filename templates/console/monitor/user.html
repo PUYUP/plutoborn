@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static listing %}
+{% load humanize %}
+
+{% block head_title %}Statistik Pengguna{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+    <p class="font-weight-bold">Total Pengguna: {{ users_total|intcomma }}</p>
+    <table class="table-sm table table-bordered table-striped">
+        <thead>
+            <col>
+            <colgroup span="2"></colgroup>
+            <colgroup span="2"></colgroup>
+
+            <tr>
+                <th rowspan="2" class="align-middle">No.</th>
+                <th rowspan="2" class="align-middle">Nama</th>
+                <th rowspan="2" class="align-middle">Topup</th>
+                <th scope="col" colspan="3" scope="colgroup" class="text-center">Koin</th>
+                <th scope="col" colspan="3" scope="colgroup" class="text-center">Poin</th>
+            </tr>
+
+            <tr class="text-center">
+                <th>IN</th>
+                <th>OUT</th>
+                <th>ACTIVE</th>
+
+                <th>IN</th>
+                <th>OUT</th>
+                <th>ACTIVE</th>
+            </tr>
+        </thead>
+
+        {% for item in users_pagination %}
+            <tr>
+                <td>{{ forloop.counter0 | add:users_pagination.start_index }}</td>
+                <td>{{ item.username }}</td>
+                <td>Rp {{ item.total_topup|intcomma }}</td>
+
+                <td class="text-center">{{ item.total_coin_in|intcomma }}</td>
+                <td class="text-center">{{ item.total_coin_out|intcomma }}</td>
+                <td class="text-center">{{ item.total_coin_active|intcomma }}</td>
+
+                <td class="text-center">{{ item.total_points_in|intcomma }}</td>
+                <td class="text-center">{{ item.total_points_out|intcomma }}</td>
+                <td class="text-center">{{ item.total_points_active|intcomma }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+                
+    {% if users_pagination.has_other_pages %}
+        <div class="d-block w-100 mt-2">
+            {% pagination pagination %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

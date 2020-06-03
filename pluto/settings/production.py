@@ -3,6 +3,9 @@ import sys
 from .base import *
 from .project import *
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 # Determine if in Production or Development
 if (len(sys.argv) >= 2 and sys.argv[1] == 'runserver'):
     DEBUG = True
@@ -10,6 +13,17 @@ else:
     DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'pluto-tryout.herokuapp.com']
+
+
+# Sentry
+sentry_sdk.init(
+    dsn="https://4e67ab469e844d3eb9d4aa5f71a97dba@o400235.ingest.sentry.io/5258558",
+    integrations=[DjangoIntegration()],
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
 
 
 # Django Sessions

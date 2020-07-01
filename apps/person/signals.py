@@ -1,15 +1,12 @@
-import asyncio
-
 from django.db.models import Q
 
 from utils.generals import get_model
-from apps.person.models.otp import _send_email
+# Celery task
+from apps.person.tasks import send_otp_email
 
 Account = get_model('person', 'Account')
 Profile = get_model('person', 'Profile')
 Role = get_model('person', 'Role')
-
-_ASYNC_LOOP = asyncio.get_event_loop()
 
 
 def user_handler(sender, instance, created, **kwargs):
@@ -25,7 +22,11 @@ def user_handler(sender, instance, created, **kwargs):
 
 def otpcode_handler(sender, instance, created, **kwargs):
     if instance.email:
-        _ASYNC_LOOP.run_in_executor(None, _send_email, instance)
+        data = {
+            'email': getattr(instance, 'email', None),
+            'otp_code': getattr(instance, 'otp_code', None)
+        }
+        send_otp_email.delay(data)
 
     if created:
         oldest = instance.__class__.objects \

@@ -1,1 +1,1 @@
-web: gunicorn pluto.wsgi --log-file -
+web: honcho start -f Procfile.real

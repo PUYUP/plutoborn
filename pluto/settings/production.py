@@ -6,12 +6,7 @@ from .project import *
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-# Determine if in Production or Development
-if (len(sys.argv) >= 2 and sys.argv[1] == 'runserver'):
-    DEBUG = True
-else:
-    DEBUG = False
-
+DEBUG = False
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'pluto-tryout.herokuapp.com']
 
 
@@ -29,20 +24,24 @@ sentry_sdk.init(
 # Django Sessions
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/2.2/ref/settings/
-# SESSION_COOKIE_SECURE = True
-# SESSION_COOKIE_SAMESITE = None
-# SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE = None
+SESSION_COOKIE_HTTPONLY = True
 
-# SECURE_CONTENT_TYPE_NOSNIFF = True
-# SECURE_BROWSER_XSS_FILTER = True
-# SECURE_SSL_REDIRECT = True
-# X_FRAME_OPTIONS = 'DENY'
+SECURE_REFERRER_POLICY = 'same-origin'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 5
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+X_FRAME_OPTIONS = 'DENY'
 
 
 # Django csrf
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/2.2/ref/csrf/
-# CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 # CSRF_TRUSTED_ORIGINS = [
 #     'opsional001.firebaseapp.com'
 # ]
@@ -51,7 +50,7 @@ sentry_sdk.init(
 # Django CORS
 # ------------------------------------------------------------------------------
 # https://pypi.org/project/django-cors-headers/
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = True
 # CORS_ORIGIN_WHITELIST = [
 #     'https://opsional001.firebaseapp.com'
 # ]
@@ -61,19 +60,10 @@ sentry_sdk.init(
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 STATIC_URL = '/static/'
-if DEBUG:
-    STATICFILES_DIRS = (
-        os.path.join(PROJECT_PATH, 'static/'),
-    )
-else:
-    STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
+STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
-
-# Add configuration for static files storage using whitenoise
-# STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # Database
@@ -88,3 +78,16 @@ DATABASES = {
         'PORT': '5432'
     }
 }
+
+
+# REDIS
+REDIS_URL = os.environ.get('REDIS_URL', '')
+
+
+# SENDGRID
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'apikey'
+EMAIL_HOST_PASSWORD = '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'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False

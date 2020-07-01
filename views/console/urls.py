@@ -6,17 +6,27 @@ from views.console.master import (
     TheoryView, TheoryEditorView, TheoryDeleteView,
     PacketView, PacketEditorView, PacketDeleteView,
     QuestionView, QuestionEditorView, QuestionDeleteView, QuestionReorderView,
-    TopUpView, TopUpDetailView)
+    TopUpView, TopUpDetailView
+)
 
 from views.console.bundle import (
     BundleView, BundleEditorView, BundleDeleteView, BoughtView, BoughtDetailView,
-    BoughtAcceptView)
+    BoughtAcceptView
+)
 
 from views.console.cms.views import (
     CMSView, CMSBannerView, CMSBannerEditorView, CMSBannerDeleteView,
-    CMSVideoView, CMSVideoEditorView, CMSVideoDeleteView)
+    CMSVideoView, CMSVideoEditorView, CMSVideoDeleteView
+)
 
-from views.console.monitor import UserMonitorView
+from views.console.monitor import (
+    MonitorView, UserMonitorView, TryOutMonitorView,
+    BundleMonitorView
+)
+
+from views.console.voucher import (
+    VoucherListView
+)
 
 urlpatterns = [
     path('', DashboardView.as_view(), name='dashboard'),
@@ -66,5 +76,10 @@ urlpatterns = [
     path('cms/video/<int:pk>/editor/', CMSVideoEditorView.as_view(), name='cms_video_editor'),
     path('cms/video/<int:pk>/delete/', CMSVideoDeleteView.as_view(), name='cms_video_delete'),
 
+    path('monitor/', MonitorView.as_view(), name='monitor_index'),
     path('monitor/user/', UserMonitorView.as_view(), name='monitor_user'),
+    path('monitor/tryout/', TryOutMonitorView.as_view(), name='monitor_tryout'),
+    path('monitor/bundle/', BundleMonitorView.as_view(), name='monitor_bundle'),
+
+    path('voucher/', VoucherListView.as_view(), name='voucher_list'),
 ]

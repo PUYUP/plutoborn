@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, NotAcceptable
 
 from utils.generals import get_model
-from apps.person.models.otp import _send_email
+from apps.person.tasks import send_otp_email
 
 from .serializers import (
     OTPCodeListSerializer,
@@ -72,7 +72,11 @@ class OTPCodeApiView(viewsets.ViewSet):
                 status=response_status.HTTP_404_NOT_FOUND)
 
         if email:
-            _send_email(otp)
+            data = {
+                'email': getattr(otp, 'email', None),
+                'otp_code': getattr(otp, 'otp_code', None)
+            }
+            send_otp_email.delay(data)
 
         return Response({'detail': _("Send!")}, status=response_status.HTTP_200_OK)
 

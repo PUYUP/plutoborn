@@ -9,7 +9,8 @@ from django.core.exceptions import ValidationError
 from gdstorage.storage import GoogleDriveStorage
 
 from apps.market.utils.constant import (
-    BUNDLE_STATUS, PUBLISHED, SIMULATION_TYPE, GENERAL, HOLD, ACCEPT, BOUGHT_STATUS)
+    BUNDLE_STATUS, PUBLISHED, SIMULATION_TYPE, GENERAL, HOLD, ACCEPT, BOUGHT_STATUS
+)
 
 User = get_user_model()
 gd_storage = GoogleDriveStorage()

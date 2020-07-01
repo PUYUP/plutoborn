@@ -1,0 +1,2 @@
+web: gunicorn pluto.wsgi --log-file -
+worker: celery -A pluto worker -l info

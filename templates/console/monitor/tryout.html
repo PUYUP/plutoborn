@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static listing %}
+{% load humanize %}
+
+{% block head_title %}Statistik Paket{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+    <p class="font-weight-bold">Total Paket Tryout: {{ packets_total|intcomma }}</p>
+    <table class="table-sm table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Paket</th>
+                <th>Total Dikerjakan</th>
+            </tr>
+        </thead>
+
+        {% for item in packets_pagination %}
+            <tr>
+                <td>{{ forloop.counter0 | add:packets_pagination.start_index }}</td>
+                <td>{{ item.label }}</td>
+                <td>{{ item.total_acquired|intcomma }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+                
+    {% if packets_pagination.has_other_pages %}
+        <div class="d-block w-100 mt-2">
+            {% pagination pagination %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

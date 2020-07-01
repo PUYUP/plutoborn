@@ -179,6 +179,13 @@
                             <span class="menu-title" data-i18n="CMS">CMS</span>
                         </a>
                     </li>
+
+                    <li class="nav-item {% if url_name == 'monitor_index' or url_name == 'monitor_user' or url_name == 'monitor_tryout' %}active{% endif %}">
+                        <a class="nav-link" href="{% url 'monitor_index' %}">
+                            <i class="menu-livicon" data-icon="dashboard"></i>
+                            <span class="menu-title" data-i18n="Monitor">Monitor</span>
+                        </a>
+                    </li>
                 {% else %}
                     <li class="nav-item {% if url_name == 'home' %}active{% endif %}">
                         <a class="nav-link" href="{% url 'home' %}">

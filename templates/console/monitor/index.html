@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block head_title %}Monitoring{% endblock %}
+{% block content_title %}Monitoring{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center mb-2">
+                <a href="{% url 'monitor_user' %}" class="card-content">
+                    <div class="card-body py-1">
+                        <h3 class="mb-0">User</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center mb-2">
+                <a href="{% url 'monitor_tryout' %}" class="card-content">
+                    <div class="card-body py-1">
+                        <h3 class="mb-0">Try Out</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center mb-2">
+                <a href="{% url 'monitor_bundle' %}" class="card-content">
+                    <div class="card-body py-1">
+                        <h3 class="mb-0">Bundel</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-md-6 col-lg-4 col-12">
+            <div class="card text-center mb-2">
+                <a href="{% url 'voucher_list' %}" class="card-content">
+                    <div class="card-body py-1">
+                        <h3 class="mb-0">Voucher</h3>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

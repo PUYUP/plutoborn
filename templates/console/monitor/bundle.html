@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static listing %}
+{% load humanize %}
+
+{% block head_title %}Statistik Bundel{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+    <p class="font-weight-bold">Total Bundel: {{ bundles_total|intcomma }}</p>
+    <table class="table-sm table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Bundel</th>
+                <th>Total Terjual</th>
+            </tr>
+        </thead>
+
+        {% for item in bundles_pagination %}
+            <tr>
+                <td>{{ forloop.counter0 | add:bundles_pagination.start_index }}</td>
+                <td>{{ item.label }}</td>
+                <td>{{ item.total_bought|intcomma }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+                
+    {% if bundles_pagination.has_other_pages %}
+        <div class="d-block w-100 mt-2">
+            {% pagination pagination %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

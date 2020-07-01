@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static listing %}
+{% load humanize %}
+
+{% block head_title %}Voucher{% endblock %}
+{% block content_title %}{% endblock %}
+
+{% block content %}
+    <p class="font-weight-bold">Total Voucher: {{ vouchers_total|intcomma }}</p>
+    <table class="table-sm table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Kode</th>
+                <th>Jumlah Koin</th>
+                <th>Berlaku Sampai</th>
+                <th>Total Redeem</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+
+        {% for item in vouchers_pagination %}
+            <tr>
+                <td>{{ forloop.counter0 | add:vouchers_pagination.start_index }}</td>
+                <td>{{ item.code }}</td>
+                <td>{{ item.coin_amount }}</td>
+                <td>{{ item.finish_date }}</th>
+                <td>{{ item.total_redeem|intcomma }}</td>
+                <td>{{ item.get_status_display }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+                
+    {% if vouchers_pagination.has_other_pages %}
+        <div class="d-block w-100 mt-2">
+            {% pagination pagination %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

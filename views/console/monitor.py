@@ -3,7 +3,7 @@ from django.views import View
 from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
-from django.db.models import Q, F, Sum, Case, When, Value, Subquery, OuterRef, IntegerField
+from django.db.models import Q, F, Sum, Count, Case, When, Value, Subquery, OuterRef, IntegerField
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models.functions import Coalesce
 
@@ -11,10 +11,24 @@ from utils.pagination import Pagination
 from utils.generals import get_model
 from apps.payment.utils.constant import (
     TRANSACTION_COIN_TYPE,
-    IN, OUT, SETTLEMENT)
+    IN, OUT, SETTLEMENT
+)
 
 User = get_user_model()
 TopUp = get_model('payment', 'TopUp')
+Packet = get_model('tryout', 'Packet')
+Bundle = get_model('market', 'Bundle')
+
+
+class MonitorView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    template_name = 'console/monitor/index.html'
+    context = dict()
+
+    def get(self, request):
+        return render(request, self.template_name, self.context)
 
 
 class UserMonitorView(LoginRequiredMixin, View):
@@ -74,5 +88,75 @@ class UserMonitorView(LoginRequiredMixin, View):
         self.context['users'] = users
         self.context['users_total'] = users.count()
         self.context['users_pagination'] = users_pagination
+        self.context['pagination'] = pagination
+        return render(request, self.template_name, self.context)
+
+
+class TryOutMonitorView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    template_name = 'console/monitor/tryout.html'
+    context = dict()
+
+    def get(self, request):
+        acquired_subqs = Packet.objects.filter(pk=OuterRef('id'))
+        packets = Packet.objects \
+            .annotate(
+                total_acquired=Coalesce(Subquery(
+                    acquired_subqs.annotate(total_acquired=Count('acquireds')).values('total_acquired'),
+                    output_field=IntegerField()
+                ), 0)
+            ).order_by('-total_acquired')
+
+        # paginator
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(packets, settings.PAGINATION_PER_PAGE)
+
+        try:
+            packets_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            packets_pagination = paginator.page(1)
+        except EmptyPage:
+            packets_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, packets, packets_pagination, page_num, paginator)
+
+        self.context['packets'] = packets
+        self.context['packets_total'] = packets.count()
+        self.context['packets_pagination'] = packets_pagination
+        self.context['pagination'] = pagination
+        return render(request, self.template_name, self.context)
+
+
+class BundleMonitorView(LoginRequiredMixin, View):
+    login_url = '/login/'
+    redirect_field_name = 'redirect_to'
+
+    template_name = 'console/monitor/bundle.html'
+    context = dict()
+
+    def get(self, request):
+        bundles = Bundle.objects \
+            .annotate(
+                total_bought=Coalesce(Count('boughts'), 0)
+            ).order_by('-total_bought')
+
+        # paginator
+        page_num = int(self.request.GET.get('p', 0))
+        paginator = Paginator(bundles, settings.PAGINATION_PER_PAGE)
+
+        try:
+            bundles_pagination = paginator.page(page_num + 1)
+        except PageNotAnInteger:
+            bundles_pagination = paginator.page(1)
+        except EmptyPage:
+            bundles_pagination = paginator.page(paginator.num_pages)
+
+        pagination = Pagination(request, bundles, bundles_pagination, page_num, paginator)
+
+        self.context['bundles'] = bundles
+        self.context['bundles_total'] = bundles.count()
+        self.context['bundles_pagination'] = bundles_pagination
         self.context['pagination'] = pagination
         return render(request, self.template_name, self.context)

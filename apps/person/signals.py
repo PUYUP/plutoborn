@@ -21,14 +21,16 @@ def user_handler(sender, instance, created, **kwargs):
 
 
 def otpcode_handler(sender, instance, created, **kwargs):
-    if instance.email:
-        data = {
-            'email': getattr(instance, 'email', None),
-            'otp_code': getattr(instance, 'otp_code', None)
-        }
-        send_otp_email.delay(data)
+    # run only on resend and created
+    if instance.is_used == False:
+        if instance.email:
+            data = {
+                'email': getattr(instance, 'email', None),
+                'otp_code': getattr(instance, 'otp_code', None)
+            }
+            send_otp_email.delay(data)
 
-    if created:
+        # mark older OTP Code to expired
         oldest = instance.__class__.objects \
             .filter(
                 Q(identifier=instance.identifier),

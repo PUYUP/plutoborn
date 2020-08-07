@@ -68,6 +68,7 @@ MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -76,6 +77,20 @@ DATABASES = {
         'PASSWORD': 'fd334241f5f4a93b8fd0de6f3a81ac87e42aef0979da7a4672d78e46eba7a02d',
         'HOST': 'ec2-107-20-155-148.compute-1.amazonaws.com',
         'PORT': '5432'
+    }
+}
+"""
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'pluto_database',
+        'USER': 'pluto_mysql_user',
+        'PASSWORD': 'moorid12zRW0cmysqluserPT4d6',
+        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
+        'PORT': '',
+        'OPTIONS': {
+            'sql_mode': 'STRICT_TRANS_TABLES',
+        }
     }
 }
 

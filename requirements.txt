@@ -23,3 +23,4 @@ django-redis>=4.12.1
 redis>=3.5.3
 future>=0.18.2
 eventlet>=0.25.2
+mysqlclient>=2.0.1

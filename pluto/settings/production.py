@@ -7,7 +7,7 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
 DEBUG = False
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'pluto-tryout.herokuapp.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'pluto-tryout.herokuapp.com', '103.41.206.67']
 
 
 # Sentry

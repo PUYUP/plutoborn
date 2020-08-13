@@ -106,6 +106,10 @@ DATABASES = {
 REDIS_URL = os.environ.get('REDIS_URL', '')
 
 
+# CACHING SERVER
+CACHES['default']['LOCATION'] = REDIS_URL
+
+
 # SENDGRID
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_USER = 'apikey'

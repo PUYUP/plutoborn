@@ -55,6 +55,11 @@ REDIS_HOST = '127.0.0.1'
 REDIS_PORT = '6379'
 REDIS_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'
 
+
+# CACHING SERVER
+CACHES['default']['LOCATION'] = REDIS_URL
+
+
 """
 # Django Debug Toolbar
 # ------------------------------------------------------------------------------

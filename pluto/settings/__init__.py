@@ -6,8 +6,7 @@ from .project import *
 if os.environ.get('PRODUCTION', False) == '1':
     from .production import *
 else:
-    from .development import *
-
+    from .production import *
 
 # CACHING SERVER
 CACHES['default']['LOCATION'] = REDIS_URL

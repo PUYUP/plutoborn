@@ -107,3 +107,9 @@ MESSAGE_TAGS = {
     messages.WARNING: 'alert alert-warning',
     messages.ERROR: 'alert alert-error',
 }
+
+
+# REDIS
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = '6379'
+REDIS_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'

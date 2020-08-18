@@ -10,7 +10,6 @@ from django.core.mail import BadHeaderError, EmailMultiAlternatives
 from celery import shared_task
 
 _PROJECT_NAME = settings.PROJECT_NAME
-UserModel = get_user_model()
 
 
 @shared_task

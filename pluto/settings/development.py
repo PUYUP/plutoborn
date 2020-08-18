@@ -11,7 +11,7 @@ DATABASES = {
         'NAME': 'django-pluto-new',
         'USER': 'root',
         'PASSWORD': '123456',
-        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
+        'HOST': '10.0.2.2',   # Or an IP Address that your DB is hosted on
         'PORT': '',
         'OPTIONS': {
             'sql_mode': 'STRICT_TRANS_TABLES',
@@ -50,11 +50,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 
-# CACHING SERVER
-CACHES['default']['LOCATION'] = REDIS_URL
-
-
-"""
 # Django Debug Toolbar
 # ------------------------------------------------------------------------------
 # https://django-debug-toolbar.readthedocs.io/en/stable/installation.html
@@ -87,4 +82,3 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }
-"""

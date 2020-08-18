@@ -3,7 +3,7 @@ from .project import *
 
 # check setting load from live server
 # this time all live server mark as production grade
-if os.environ.get('PRODUCTION', False) == '1':
+if os.environ.get('PRODUCTION', False) == '1' or os.environ.get('PRODUCTION', False) == 1:
     from .production import *
 else:
     from .development import *

@@ -50,6 +50,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 
+"""
 # Django Debug Toolbar
 # ------------------------------------------------------------------------------
 # https://django-debug-toolbar.readthedocs.io/en/stable/installation.html
@@ -82,3 +83,4 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }
+"""
